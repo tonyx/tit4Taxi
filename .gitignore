@@ -35,6 +35,7 @@ bld/
 .vs/
 # Generated user secrets file
 usrsecrets.json
+appsettings.json
 
 # Web/App Host databases
 *.db

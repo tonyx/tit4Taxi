@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UserSecretsId>a77ad8bf-ba6b-424e-a39f-a69f95a97a0e</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Library.fs" />
+    <Compile Include="Slices/User/Events.fs" />
+    <Compile Include="Slices/User/Commands.fs" />
+    <Compile Include="Slices/User/UserService.fs" />
+    <Compile Include="Slices/MailQueueNotification/MailQueue.fs" />
+    <Compile Include="Slices/MailQueueNotification/MailQueueEvents.fs" />
+    <Compile Include="Slices/MailQueueNotification/MailQueueCommands.fs" />
+    <Compile Include="Slices/MailQueueNotification/IMailResenderService.fs" />
+    <Compile Include="Slices/MailQueueNotification/MailResenderService.fs" />
+    <Compile Include="Slices/MailQueueNotification/MailResenderScheduler.fs" />
+    <Compile Include="Services/MailNotificator.fs" />
+
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\titfortat.Shared\titfortat.Shared.fsproj" />
+    <!-- <ProjectReference Include="..\..\realsharpino\Sharpino\Sharpino.Lib\Sharpino.Lib.fsproj" /> -->
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mailjet.Api" Version="4.0.0" />
+    <PackageReference Include="Sharpino" Version="6.0.5" />
+  </ItemGroup>
+
+</Project>
