@@ -1,0 +1,208 @@
+@page "/Admin/Coops"
+@attribute [Authorize(Roles = "ADMIN")]
+@using TitForTat.Services
+@using TitForTat.Shared.Services
+@using static TitForTat.Shared.Commons
+@using static TitForTat.Domain.Coop
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using TitForTat.Shared
+@inject ICoopService CoopService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Manage Coops</PageTitle>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            <div class="card border-0 shadow-lg" style="border-radius: 16px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center py-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 p-2 rounded-3">
+                            <i class="bi bi-people-fill fs-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0 fw-bold">Cooperative Management</h3>
+                            <p class="mb-0 text-white-50 small">View and create taxi cooperatives</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                            @errorMessage
+                            <button type="button" class="btn-close" @onclick="() => errorMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @successMessage
+                            <button type="button" class="btn-close" @onclick="() => successMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Create Coop Section -->
+                    <div class="p-4 mb-5 border rounded-4 bg-light bg-opacity-50">
+                        <h4 class="mb-3 fw-bold text-dark fs-5">Create New Cooperative</h4>
+                        <EditForm Model="@newCoopModel" OnValidSubmit="HandleCreateCoop">
+                            <DataAnnotationsValidator />
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-8">
+                                    <label for="coopName" class="form-label fw-semibold text-secondary">Cooperative Name</label>
+                                    <InputText id="coopName" class="form-control form-control-lg bg-white shadow-sm" style="border-radius: 10px;" placeholder="e.g. Metro Cabs Consortium" @bind-Value="newCoopModel.Name" />
+                                    <ValidationMessage For="() => newCoopModel.Name" class="text-danger mt-1 small" />
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow" style="border-radius: 10px; font-weight: 600;">
+                                        <i class="bi bi-plus-lg me-2"></i>Create Coop
+                                    </button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    </div>
+
+                    <!-- Existing Coops Section -->
+                    <h4 class="mb-3 fw-bold text-dark fs-5">Existing Cooperatives</h4>
+                    @if (coops == null)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Retrieving cooperatives list...</p>
+                        </div>
+                    }
+                    else if (!coops.Any())
+                    {
+                        <div class="text-center py-5 border border-dashed rounded-4 bg-white">
+                            <i class="bi bi-folder-x fs-1 text-muted"></i>
+                            <p class="mt-3 mb-0 text-secondary fw-semibold">No cooperatives registered yet.</p>
+                            <p class="text-muted small">Use the form above to add the first cooperative.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive shadow-sm rounded-4">
+                            <table class="table table-hover align-middle mb-0 bg-white">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="ps-4">Coop ID</th>
+                                        <th>Name</th>
+                                        <th>Managers Count</th>
+                                        <th>Members Count</th>
+                                        <th class="pe-4 text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var coop in coops)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 font-monospace small text-muted">@coop.CoopId.Value</td>
+                                            <td class="fw-bold text-dark">@coop.Name</td>
+                                            <td>
+                                                <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                    @coop.Managers.Length
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                                                    @coop.Members.Length
+                                                </span>
+                                            </td>
+                                            <td class="pe-4 text-end">
+                                                <a href="/Admin/Coop/@coop.CoopId.Value" class="btn btn-sm btn-outline-primary shadow-sm" style="border-radius: 8px;">
+                                                    <i class="bi bi-gear-fill me-1"></i>Manage
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Coop>? coops;
+    private string? errorMessage;
+    private string? successMessage;
+    private CoopFormModel newCoopModel = new();
+    private UserContext? userContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userContext = ConverterUtils.fromClaimsPrincipal(authState.User);
+        await LoadCoops();
+    }
+
+    private async Task LoadCoops()
+    {
+        if (userContext == null) return;
+
+        var result = await CoopService.GetAllCoops(userContext, CancellationToken.None);
+        if (result.IsOk)
+        {
+            coops = result.ResultValue.ToList();
+        }
+        else
+        {
+            errorMessage = $"Failed to load cooperatives: {result.ErrorValue}";
+        }
+    }
+
+    private async Task HandleCreateCoop()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (userContext == null)
+        {
+            errorMessage = "User is not authenticated.";
+            return;
+        }
+
+        var trimmedName = newCoopModel.Name.Trim();
+        if (string.IsNullOrWhiteSpace(trimmedName))
+        {
+            errorMessage = "Cooperative name cannot be empty.";
+            return;
+        }
+
+        // Validate uniqueness: must differ from the existing coops
+        if (coops != null && coops.Any(c => string.Equals(c.Name.Trim(), trimmedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            errorMessage = $"A cooperative with the name '{trimmedName}' already exists.";
+            return;
+        }
+
+        var result = await CoopService.CreateCoop(userContext, trimmedName, CancellationToken.None);
+        if (result.IsOk)
+        {
+            successMessage = $"Cooperative '{trimmedName}' created successfully.";
+            newCoopModel = new();
+            await LoadCoops();
+        }
+        else
+        {
+            errorMessage = $"Failed to create cooperative: {result.ErrorValue}";
+        }
+    }
+
+    public class CoopFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Cooperative name is required.")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Cooperative name cannot exceed 100 characters.")]
+        public string Name { get; set; } = string.Empty;
+    }
+}

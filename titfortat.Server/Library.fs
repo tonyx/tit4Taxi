@@ -1,4 +1,4 @@
-﻿namespace titfortat.Server
+﻿namespace TitForTat.Server
 
 module Say =
     let hello name =

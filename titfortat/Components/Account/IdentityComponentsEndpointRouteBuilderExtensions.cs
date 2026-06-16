@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using titfortat.Components.Account.Pages;
-using titfortat.Components.Account.Pages.Manage;
-using titfortat.Data;
+using TitForTat.Components.Account.Pages;
+using TitForTat.Components.Account.Pages.Manage;
+using TitForTat.Data;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -53,11 +53,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         accountGroup.MapPost("/PasskeyCreationOptions", async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
-            [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromServices] IAntiforgery antiforgery) =>
+            [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
-            await antiforgery.ValidateRequestAsync(context);
-
             var user = await userManager.GetUserAsync(context.User);
             if (user is null)
             {
@@ -73,21 +70,50 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 DisplayName = userName
             });
             return TypedResults.Content(optionsJson, contentType: "application/json");
-        });
+        }).DisableAntiforgery();
+
+        accountGroup.MapPost("/RegisterPasskeyOptions", async (
+            HttpContext context,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromQuery] string username) =>
+        {
+            if (string.IsNullOrEmpty(username))
+            {
+                return Results.BadRequest("Username is required.");
+            }
+
+            var user = await userManager.FindByNameAsync(username);
+            if (user is null)
+            {
+                user = new ApplicationUser { UserName = username, Email = username };
+                var createResult = await userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    return Results.BadRequest(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                }
+            }
+
+            var userId = await userManager.GetUserIdAsync(user);
+            var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(new()
+            {
+                Id = userId,
+                Name = username,
+                DisplayName = username
+            });
+            return TypedResults.Content(optionsJson, contentType: "application/json");
+        }).DisableAntiforgery();
 
         accountGroup.MapPost("/PasskeyRequestOptions", async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromServices] IAntiforgery antiforgery,
             [FromQuery] string? username) =>
         {
-            await antiforgery.ValidateRequestAsync(context);
-
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
             var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
             return TypedResults.Content(optionsJson, contentType: "application/json");
-        });
+        }).DisableAntiforgery();
 
         var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
 

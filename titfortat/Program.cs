@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Sharpino;
-using titfortat.Client.Pages;
-using titfortat.Components;
-using titfortat.Components.Account;
-using titfortat.Data;
-using titfortat.Services;
-using titfortat.Shared.Services;
+using TitForTat.Client.Pages;
+using TitForTat.Components;
+using TitForTat.Components.Account;
+using TitForTat.Data;
+using TitForTat.Services;
+using TitForTat.Shared.Services;
 using Mailjet.Client;
 using TitForTat.Server.MailQueueNotification;
 using TitForTat.Shared.Infrastructure.Services;
@@ -47,6 +47,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
         options.SignIn.RequireConfirmedAccount = false;
         options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
     })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -55,6 +56,10 @@ var connection = builder.Configuration.GetConnectionString("EventStore") ?? thro
 
 builder.Services.AddSingleton<Storage.IEventStore<string>>(_ => new PgStorage.PgEventStore(connection));
 builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddSingleton<ICoopService, CoopService>();
+builder.Services.AddSingleton<ILedgerService, LedgerService>();
+
+builder.Services.AddSingleton<IRegistrationCodeService, RegistrationCodeService>();
 var mailjetApiKey = builder.Configuration["Mailjet:ApiKey"];
 var mailjetSecretKey = builder.Configuration["Mailjet:SecretKey"];
 builder.Services.AddSingleton(new MailjetClient(mailjetApiKey, mailjetSecretKey));
@@ -80,16 +85,15 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
-app.UseAntiforgery();
-
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(titfortat.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(TitForTat.Client._Imports).Assembly);
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
@@ -119,5 +123,32 @@ using (var scope = app.Services.CreateScope())
     await mailResenderService.CreateInitialMailQueueInstanceAsync(Microsoft.FSharp.Core.FSharpOption<System.Threading.CancellationToken>.None);
 }
 
-app.Run();
+// seed roles and assign admin
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roles = { "ADMIN", "MANAGER", "CONTROLLER" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
 
+    var adminUserName = builder.Configuration["AdminUserName"];
+    if (!string.IsNullOrEmpty(adminUserName))
+    {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var adminUser = await userManager.FindByNameAsync(adminUserName) ?? await userManager.FindByEmailAsync(adminUserName);
+        if (adminUser != null)
+        {
+            if (!await userManager.IsInRoleAsync(adminUser, "ADMIN"))
+            {
+                await userManager.AddToRoleAsync(adminUser, "ADMIN");
+            }
+        }
+    }
+}
+
+app.Run();

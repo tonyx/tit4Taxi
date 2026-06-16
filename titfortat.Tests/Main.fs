@@ -1,4 +1,4 @@
-﻿module titfortat.Tests
+﻿module TitForTat.Tests
 open Expecto
 
 [<EntryPoint>]

@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>TitForTat.Shared</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -8,10 +9,14 @@
   <ItemGroup>
     <Compile Include="Library.fs" />
     <Compile Include="Commons/Commons.fs" />
+    <Compile Include="Commons/ConverterUtils.fs"/>
     <Compile Include="Slices/User/User.fs" />
     <Compile Include="Slices/User/IUserService.fs" />
+    <Compile Include="Slices/Coop/Coop.fs" />
+    <Compile Include="Slices/Coop/ICoopService.fs" />
+    <Compile Include="Slices/Ledger/Ledger.fs" />
+    <Compile Include="Slices/Ledger/ILedgerService.fs" />
     <Compile Include="Infrastructure/Services/IMailSender.fs" />
-
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-namespace titfortat.Domain
+namespace TitForTat.Domain
 open System
 open Sharpino.Core
 open TitForTat.Shared.Commons

@@ -3,7 +3,7 @@ namespace TitForTat.Infrastructure.Services
 open Mailjet.Client;
 open Mailjet.Client.TransactionalEmails;
 open Mailjet.Client.TransactionalEmails.Response;
-open titfortat.MessagesScheduler;
+open TitForTat.MessagesScheduler;
 open TitForTat.Server.MailQueueNotification;
 open TitForTat.Shared.Infrastructure.Services;
 open Microsoft.Extensions.Configuration

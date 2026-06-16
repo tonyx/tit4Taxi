@@ -1,0 +1,28 @@
+/Users/antoniolucca/github/titfortat/titfortat.sln.metaproj : warning MSB4121: The project configuration for project "titfortat.Server" was not specified in the solution file for the solution configuration "Debug|Any CPU". [/Users/antoniolucca/github/titfortat/titfortat.sln]
+  Determining projects to restore...
+/Users/antoniolucca/github/titfortat/titfortat.Server/titfortat.Server.fsproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved. [/Users/antoniolucca/github/titfortat/titfortat.sln]
+/Users/antoniolucca/github/titfortat/titfortat/titfortat.csproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved. [/Users/antoniolucca/github/titfortat/titfortat.sln]
+  All projects are up-to-date for restore.
+/Users/antoniolucca/github/titfortat/titfortat.sln.metaproj : warning MSB4121: The project configuration for project "titfortat.Server" was not specified in the solution file for the solution configuration "Debug|Any CPU". [/Users/antoniolucca/github/titfortat/titfortat.sln]
+/Users/antoniolucca/github/titfortat/titfortat/titfortat.csproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved.
+  titfortat.Shared -> /Users/antoniolucca/github/titfortat/titfortat.Shared/bin/Debug/net10.0/titfortat.Shared.dll
+  titfortat.Client -> /Users/antoniolucca/github/titfortat/titfortat.Client/bin/Debug/net10.0/titfortat.Client.dll
+  titfortat.Client (Blazor output) -> /Users/antoniolucca/github/titfortat/titfortat.Client/bin/Debug/net10.0/wwwroot
+/Users/antoniolucca/github/titfortat/titfortat.Server/titfortat.Server.fsproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved.
+  titfortat.Server -> /Users/antoniolucca/github/titfortat/titfortat.Server/bin/Debug/net10.0/titfortat.Server.dll
+/Users/antoniolucca/github/titfortat/titfortat/obj/Debug/net10.0/MicrosoftTestingPlatformEntryPoint.cs(12,70): warning CS7022: The entry point of the program is global code; ignoring 'MicrosoftTestingPlatformEntryPoint.Main(string[])' entry point. [/Users/antoniolucca/github/titfortat/titfortat/titfortat.csproj]
+  titfortat -> /Users/antoniolucca/github/titfortat/titfortat/bin/Debug/net10.0/titfortat.dll
+
+Build succeeded.
+
+/Users/antoniolucca/github/titfortat/titfortat.sln.metaproj : warning MSB4121: The project configuration for project "titfortat.Server" was not specified in the solution file for the solution configuration "Debug|Any CPU". [/Users/antoniolucca/github/titfortat/titfortat.sln]
+/Users/antoniolucca/github/titfortat/titfortat.Server/titfortat.Server.fsproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved. [/Users/antoniolucca/github/titfortat/titfortat.sln]
+/Users/antoniolucca/github/titfortat/titfortat/titfortat.csproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved. [/Users/antoniolucca/github/titfortat/titfortat.sln]
+/Users/antoniolucca/github/titfortat/titfortat.sln.metaproj : warning MSB4121: The project configuration for project "titfortat.Server" was not specified in the solution file for the solution configuration "Debug|Any CPU". [/Users/antoniolucca/github/titfortat/titfortat.sln]
+/Users/antoniolucca/github/titfortat/titfortat/titfortat.csproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved.
+/Users/antoniolucca/github/titfortat/titfortat.Server/titfortat.Server.fsproj : warning NU1608: Detected package version outside of dependency constraint: Expecto.FsCheck 10.2.3 requires FsCheck (>= 2.16.5 && < 3.0.0) but version FsCheck 3.3.3 was resolved.
+/Users/antoniolucca/github/titfortat/titfortat/obj/Debug/net10.0/MicrosoftTestingPlatformEntryPoint.cs(12,70): warning CS7022: The entry point of the program is global code; ignoring 'MicrosoftTestingPlatformEntryPoint.Main(string[])' entry point. [/Users/antoniolucca/github/titfortat/titfortat/titfortat.csproj]
+    7 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:10.83

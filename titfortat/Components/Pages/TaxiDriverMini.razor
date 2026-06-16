@@ -1,0 +1,351 @@
+@page "/TaxiDriverMini"
+@attribute [Authorize]
+@using TitForTat.Services
+@using TitForTat.Shared.Services
+@using static TitForTat.Shared.Commons
+@using static TitForTat.Domain.Coop
+@using static TitForTat.Domain.Ledger
+@using static TitForTat.Domain.User
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using TitForTat.Shared
+@inject ICoopService CoopService
+@inject ILedgerService LedgerService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Quick Spend</PageTitle>
+
+<div class="container d-flex flex-column align-items-center justify-content-center min-vh-100 py-4" style="max-width: 500px;">
+    <!-- Main Card -->
+    <div class="card border-0 shadow-lg w-100 p-4 text-center" style="border-radius: 24px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+        
+        <!-- Header -->
+        <div class="mb-4">
+            <div class="d-inline-flex bg-warning text-dark p-3 rounded-circle shadow-sm mb-3">
+                <i class="bi bi-lightning-fill fs-3"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Quick Spend Portal</h3>
+            <p class="text-muted small">Simplified mobile token logging</p>
+        </div>
+
+        <!-- Feedback Messages -->
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger shadow-sm small" role="alert" style="border-radius: 12px;">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success shadow-sm small" role="alert" style="border-radius: 12px;">
+                <i class="bi bi-check-circle-fill me-1"></i> @successMessage
+            </div>
+        }
+
+        @if (isLoading)
+        {
+            <div class="py-5">
+                <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted small">Locating cooperative & active ledger...</p>
+            </div>
+        }
+        else if (userCoop == null)
+        {
+            <div class="py-4 text-danger">
+                <i class="bi bi-building-exclamation fs-1 mb-2"></i>
+                <h5 class="fw-bold">No Cooperative Affiliation</h5>
+                <p class="text-muted small px-3">You do not belong to any cooperative. Please contact your administrator or join a cooperative in the main Taxi Driver dashboard.</p>
+                <a href="/TaxiDriver" class="btn btn-outline-secondary btn-sm mt-3 px-4" style="border-radius: 10px;">Go to Portal</a>
+            </div>
+        }
+        else if (targetLedger == null)
+        {
+            <div class="py-4 text-secondary">
+                <i class="bi bi-journal-x fs-1 mb-2"></i>
+                <h5 class="fw-bold">No Active Ledgers</h5>
+                <p class="text-muted small px-3">There are no active ledgers configured for your cooperative (@userCoop.Name) yet.</p>
+            </div>
+        }
+        else
+        {
+            <!-- Info block -->
+            <div class="bg-light p-3 rounded-4 mb-4 text-start shadow-sm">
+                <div class="mb-2">
+                    <span class="text-secondary small fw-semibold d-block">Your Cooperative</span>
+                    <span class="fw-bold text-dark">@userCoop.Name</span>
+                </div>
+                <div class="mb-2">
+                    <span class="text-secondary small fw-semibold d-block">Opposite Cooperative</span>
+                    <span class="fw-bold text-primary">@(otherCoop?.Name ?? "Loading...")</span>
+                </div>
+                @if (userLat.HasValue && userLng.HasValue)
+                {
+                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                        <span class="text-muted small"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Location Acquired</span>
+                        <button class="btn btn-sm btn-link text-warning p-0 text-decoration-none small" @onclick="RefreshLocation"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-danger small mt-2 pt-2 border-top">
+                        <i class="bi bi-geo-fill me-1"></i> Geolocation unavailable. Defaults to override confirmation.
+                    </div>
+                }
+            </div>
+
+            <!-- Huge Action Button -->
+            <div class="my-4">
+                @if (isCloserToOpposite)
+                {
+                    <button class="btn btn-success w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase pulse-animation" style="border-radius: 20px; min-height: 140px;" @onclick="ExecuteSpend">
+                        <i class="bi bi-check-circle-fill d-block fs-1 mb-2"></i>
+                        Spend Token
+                    </button>
+                    <div class="text-success small mt-2 fw-semibold">
+                        <i class="bi bi-shield-check me-1"></i> Geolocation verified: You are in loading zone
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-danger w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase" style="border-radius: 20px; min-height: 140px;" @onclick="ExecuteSpend">
+                        <i class="bi bi-exclamation-triangle-fill d-block fs-1 mb-2"></i>
+                        Spend Token
+                    </button>
+                    <div class="text-danger small mt-2 fw-semibold">
+                        <i class="bi bi-shield-exclamation me-1"></i> Geolocation Warning: Outside loading zone
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .pulse-animation {
+        box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+        animation: pulse 2s infinite;
+    }
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        70% {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 15px rgba(25, 135, 84, 0);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+        }
+    }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private Coop? userCoop;
+    private TitForTat.Domain.Ledger.Ledger? targetLedger;
+    private Coop? otherCoop;
+    private bool isCloserToOpposite = false;
+    private double? userLat;
+    private double? userLng;
+    private string? errorMessage;
+    private string? successMessage;
+    private UserContext? userContext;
+    private UserId currentUserId = UserId.New();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboard();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && userCoop != null && targetLedger != null)
+        {
+            await RefreshLocation();
+        }
+    }
+
+    private async Task LoadDashboard()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            userContext = ConverterUtils.fromClaimsPrincipal(authState.User);
+
+            if (userContext == null || userContext.IsAnonymous)
+            {
+                errorMessage = "You must be logged in to view this page.";
+                isLoading = false;
+                return;
+            }
+
+            if (userContext is UserContext.Authenticated authenticated)
+            {
+                currentUserId = authenticated.UserId;
+            }
+
+            // Load cooperatives
+            var coopsResult = await CoopService.GetAllCoops(userContext, CancellationToken.None);
+            if (coopsResult.IsOk)
+            {
+                var allCoops = coopsResult.ResultValue.ToList();
+                userCoop = allCoops.FirstOrDefault(c => c.IsMember(currentUserId) || c.IsManager(currentUserId));
+            }
+            else
+            {
+                errorMessage = $"Failed to load cooperatives: {coopsResult.ErrorValue}";
+                isLoading = false;
+                return;
+            }
+
+            if (userCoop != null)
+            {
+                // Load first active ledger involving the user's coop
+                var ledgersResult = await LedgerService.GetAllLedgers(userContext, CancellationToken.None);
+                if (ledgersResult.IsOk)
+                {
+                    targetLedger = ledgersResult.ResultValue
+                        .FirstOrDefault(l => l.Coops.Item1.Value == userCoop.CoopId.Value || l.Coops.Item2.Value == userCoop.CoopId.Value);
+
+                    if (targetLedger != null)
+                    {
+                        var isCoop1 = targetLedger.Coops.Item1.Value == userCoop.CoopId.Value;
+                        var otherCoopId = isCoop1 ? targetLedger.Coops.Item2 : targetLedger.Coops.Item1;
+                        var otherCoopResult = await CoopService.GetCoop(userContext, otherCoopId, CancellationToken.None);
+                        if (otherCoopResult.IsOk)
+                        {
+                            otherCoop = otherCoopResult.ResultValue;
+                        }
+                    }
+                }
+                else
+                {
+                    errorMessage = $"Failed to load ledgers: {ledgersResult.ErrorValue}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred loading dashboard: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshLocation()
+    {
+        try
+        {
+            var coords = await JSRuntime.InvokeAsync<CoordinateDto>("coopMap.getUserCoordinates");
+            if (coords != null)
+            {
+                userLat = coords.Latitude;
+                userLng = coords.Longitude;
+                EvaluateDistances();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving coordinates: {ex.Message}");
+            userLat = null;
+            userLng = null;
+            isCloserToOpposite = false; // Default to warning if we cannot check coordinates
+        }
+        StateHasChanged();
+    }
+
+    private void EvaluateDistances()
+    {
+        if (!userLat.HasValue || !userLng.HasValue || userCoop == null || otherCoop == null)
+        {
+            isCloserToOpposite = false;
+            return;
+        }
+
+        var hasUserCoopCoord = userCoop.CenterCoordinate != null && Microsoft.FSharp.Core.OptionModule.IsSome(userCoop.CenterCoordinate);
+        var hasOtherCoopCoord = otherCoop.CenterCoordinate != null && Microsoft.FSharp.Core.OptionModule.IsSome(otherCoop.CenterCoordinate);
+
+        if (!hasUserCoopCoord || !hasOtherCoopCoord)
+        {
+            isCloserToOpposite = false;
+            return;
+        }
+
+        var userCoopCoord = userCoop.CenterCoordinate!.Value;
+        var otherCoopCoord = otherCoop!.CenterCoordinate!.Value;
+
+        var distToOwn = CalculateDistance(userLat.Value, userLng.Value, userCoopCoord.Latitude, userCoopCoord.Longitude);
+        var distToOther = CalculateDistance(userLat.Value, userLng.Value, otherCoopCoord.Latitude, otherCoopCoord.Longitude);
+
+        // Supposed to spend the token in the opposite cooperative's territory (loading passengers there)
+        isCloserToOpposite = distToOther < distToOwn;
+    }
+
+    private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        var R = 6371000.0; // Earth's radius in meters
+        var phi1 = lat1 * Math.PI / 180.0;
+        var phi2 = lat2 * Math.PI / 180.0;
+        var deltaPhi = (lat2 - lat1) * Math.PI / 180.0;
+        var deltaLambda = (lon2 - lon1) * Math.PI / 180.0;
+
+        var a = Math.Sin(deltaPhi / 2.0) * Math.Sin(deltaPhi / 2.0) +
+                Math.Cos(phi1) * Math.Cos(phi2) *
+                Math.Sin(deltaLambda / 2.0) * Math.Sin(deltaLambda / 2.0);
+        
+        var c = 2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a));
+        return R * c;
+    }
+
+    private async Task ExecuteSpend()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (userContext == null || userCoop == null || targetLedger == null) return;
+
+        if (!isCloserToOpposite)
+        {
+            var warningText = "WARNING: You appear closer to your own cooperative's territory than the opposite cooperative's territory. According to geolocation rules, you are not supposed to log a spent token here. Do you wish to proceed anyway?";
+            var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);
+            if (!confirmOverride) return;
+        }
+
+        isLoading = true;
+        try
+        {
+            var result = await LedgerService.SpendToken(userContext, targetLedger.LedgerId, userCoop.CoopId, currentUserId, CancellationToken.None);
+            if (result.IsOk)
+            {
+                successMessage = "Token spent registered successfully!";
+                await LoadDashboard();
+            }
+            else
+            {
+                errorMessage = $"Failed to spend token: {result.ErrorValue}";
+                isLoading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred spending the token: {ex.Message}";
+            isLoading = false;
+        }
+    }
+
+    public class CoordinateDto
+    {
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+    }
+}

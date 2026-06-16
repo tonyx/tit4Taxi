@@ -1,4 +1,4 @@
-namespace titfortat.Components.Account;
+namespace TitForTat.Components.Account;
 
 public class PasskeyInputModel
 {

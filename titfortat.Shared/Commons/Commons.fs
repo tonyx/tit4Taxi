@@ -12,13 +12,21 @@ let jsonOptions = JsonFSharpOptions.Default().WithAllowNullFields(true).ToJsonSe
 
 type AggregateViewerAsync2<'A> = Option<CancellationToken> -> Guid -> Task<Result<int * 'A, string>>
 
-type FleetId =
-    | FleetId of Id: Guid
+type CoopId =
+    | CoopId of Id: Guid
     with 
-        static member New() = FleetId(Guid.NewGuid())
+        static member New() = CoopId(Guid.NewGuid())
         member this.Value =
             match this with
-            | FleetId id -> id
+            | CoopId id -> id
+
+type LedgerId =
+    | LedgerId of Id: Guid
+    with 
+        static member New() = LedgerId(Guid.NewGuid())
+        member this.Value =
+            match this with
+            | LedgerId id -> id
 
 type UserId =
     | UserId of Id: Guid
@@ -73,23 +81,19 @@ type AppUserInfo =
                     IsPhoneNumberConfirmed = false
                     TwoFactorEnabled = false
                 }
-            // static member FromApplicationUser (applicationUser: ApplicationUser) = 
-            //     { 
-            //         UserName = applicationUser.UserName
-            //         Email = applicationUser.Email
-            //         IsEmailConfirmed = applicationUser.IsEmailConfirmed
-            //         PhoneNumber = applicationUser.PhoneNumber
-            //         IsPhoneNumberConfirmed = applicationUser.IsPhoneNumberConfirmed
-            //         TwoFactorEnabled = applicationUser.TwoFactorEnabled
-            //     }
             member this.IsEmpty () = 
                 this.Equals(AppUserInfo.Empty)
 
+type Coordinate =
+    {
+        Latitude: double
+        Longitude: double
+    }
+
 type Role =
     | Admin
-    | FleetAdmin
-    | TaxiDriver
-    | User
+    | Manager
+    | Controller
 
 type UserContext =
     | Authenticated of UserId: UserId * Roles: List<Role>

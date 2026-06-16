@@ -1,4 +1,4 @@
-\restrict YW9NRenFXa6rCACz8IZ7sz8xBIviBHRMBRc1rCjoqftgimifR6dfQrwlyxNNnDf
+\restrict KmtohlGJYBssa528t9QXqgmaVhG7zX7T38LcqBhLp2G8yo3ugzQu1Xw8hI4KtoT
 
 -- Dumped from database version 17.9 (Homebrew)
 -- Dumped by pg_dump version 17.9 (Homebrew)
@@ -14,6 +14,40 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+
+--
+-- Name: insert_01_coop_event_and_return_id(text, uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_01_coop_event_and_return_id(event_in text, aggregate_id uuid) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+inserted_id integer;
+BEGIN
+INSERT INTO events_01_Coop(event, aggregate_id, timestamp)
+VALUES(event_in::text, aggregate_id,  now()) RETURNING id INTO inserted_id;
+return inserted_id;
+END;
+$$;
+
+
+--
+-- Name: insert_01_ledger_event_and_return_id(text, uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_01_ledger_event_and_return_id(event_in text, aggregate_id uuid) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+inserted_id integer;
+BEGIN
+INSERT INTO events_01_Ledger(event, aggregate_id, timestamp)
+VALUES(event_in::text, aggregate_id,  now()) RETURNING id INTO inserted_id;
+return inserted_id;
+END;
+$$;
+
 
 --
 -- Name: insert_01_mailqueue_event_and_return_id(text, uuid); Type: FUNCTION; Schema: public; Owner: -
@@ -44,6 +78,152 @@ inserted_id integer;
 BEGIN
 INSERT INTO events_01_User(event, aggregate_id, timestamp)
 VALUES(event_in::text, aggregate_id,  now()) RETURNING id INTO inserted_id;
+return inserted_id;
+END;
+$$;
+
+
+--
+-- Name: insert_md_01_coop_aggregate_event_and_return_id(text, uuid, integer, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_md_01_coop_aggregate_event_and_return_id(event_in text, aggregate_id uuid, distance_from_latest_snapshot integer, md text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+inserted_id integer;
+    event_id integer;
+BEGIN
+    event_id := insert_md_01_Coop_event_and_return_id(event_in, aggregate_id, distance_from_latest_snapshot, md);
+
+INSERT INTO aggregate_events_01_Coop(aggregate_id, event_id)
+VALUES(aggregate_id, event_id) RETURNING id INTO inserted_id;
+return event_id;
+END;
+$$;
+
+
+--
+-- Name: insert_md_01_coop_aggregate_event_and_return_id_opt_lock(text, uuid, integer, text, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_md_01_coop_aggregate_event_and_return_id_opt_lock(event_in text, aggregate_id uuid, distance_from_latest_snapshot integer, md text, last_event_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    inserted_id integer;
+    event_id integer;
+    found_last_event_id integer;
+BEGIN
+    SELECT id INTO found_last_event_id
+    FROM events_01_Coop
+    WHERE events_01_Coop.aggregate_id = insert_md_01_Coop_aggregate_event_and_return_id_opt_lock.aggregate_id
+    ORDER BY id DESC LIMIT 1;
+
+    IF last_event_id = 0 THEN
+        IF found_last_event_id IS NOT NULL THEN
+            RAISE EXCEPTION 'Optimistic locking check failed: expected no previous events, but found event %', found_last_event_id;
+        END IF;
+    ELSIF last_event_id > 0 THEN
+        IF found_last_event_id IS NULL OR found_last_event_id <> last_event_id THEN
+            RAISE EXCEPTION 'Optimistic locking check failed: expected last event id %, but found %', last_event_id, found_last_event_id;
+        END IF;
+    END IF;
+
+    event_id := insert_md_01_Coop_event_and_return_id(event_in, aggregate_id, distance_from_latest_snapshot, md);
+
+    INSERT INTO aggregate_events_01_Coop(aggregate_id, event_id)
+    VALUES(aggregate_id, event_id) RETURNING id INTO inserted_id;
+    return event_id;
+END;
+$$;
+
+
+--
+-- Name: insert_md_01_coop_event_and_return_id(text, uuid, integer, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_md_01_coop_event_and_return_id(event_in text, aggregate_id uuid, distance_from_latest_snapshot integer, md text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+inserted_id integer;
+BEGIN
+INSERT INTO events_01_Coop(event, aggregate_id, distance_from_latest_snapshot, timestamp, md)
+VALUES(event_in::text, aggregate_id, distance_from_latest_snapshot, now(), md) RETURNING id INTO inserted_id;
+return inserted_id;
+END;
+$$;
+
+
+--
+-- Name: insert_md_01_ledger_aggregate_event_and_return_id(text, uuid, integer, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_md_01_ledger_aggregate_event_and_return_id(event_in text, aggregate_id uuid, distance_from_latest_snapshot integer, md text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+inserted_id integer;
+    event_id integer;
+BEGIN
+    event_id := insert_md_01_Ledger_event_and_return_id(event_in, aggregate_id, distance_from_latest_snapshot, md);
+
+INSERT INTO aggregate_events_01_Ledger(aggregate_id, event_id)
+VALUES(aggregate_id, event_id) RETURNING id INTO inserted_id;
+return event_id;
+END;
+$$;
+
+
+--
+-- Name: insert_md_01_ledger_aggregate_event_and_return_id_opt_lock(text, uuid, integer, text, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_md_01_ledger_aggregate_event_and_return_id_opt_lock(event_in text, aggregate_id uuid, distance_from_latest_snapshot integer, md text, last_event_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    inserted_id integer;
+    event_id integer;
+    found_last_event_id integer;
+BEGIN
+    SELECT id INTO found_last_event_id
+    FROM events_01_Ledger
+    WHERE events_01_Ledger.aggregate_id = insert_md_01_Ledger_aggregate_event_and_return_id_opt_lock.aggregate_id
+    ORDER BY id DESC LIMIT 1;
+
+    IF last_event_id = 0 THEN
+        IF found_last_event_id IS NOT NULL THEN
+            RAISE EXCEPTION 'Optimistic locking check failed: expected no previous events, but found event %', found_last_event_id;
+        END IF;
+    ELSIF last_event_id > 0 THEN
+        IF found_last_event_id IS NULL OR found_last_event_id <> last_event_id THEN
+            RAISE EXCEPTION 'Optimistic locking check failed: expected last event id %, but found %', last_event_id, found_last_event_id;
+        END IF;
+    END IF;
+
+    event_id := insert_md_01_Ledger_event_and_return_id(event_in, aggregate_id, distance_from_latest_snapshot, md);
+
+    INSERT INTO aggregate_events_01_Ledger(aggregate_id, event_id)
+    VALUES(aggregate_id, event_id) RETURNING id INTO inserted_id;
+    return event_id;
+END;
+$$;
+
+
+--
+-- Name: insert_md_01_ledger_event_and_return_id(text, uuid, integer, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.insert_md_01_ledger_event_and_return_id(event_in text, aggregate_id uuid, distance_from_latest_snapshot integer, md text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+inserted_id integer;
+BEGIN
+INSERT INTO events_01_Ledger(event, aggregate_id, distance_from_latest_snapshot, timestamp, md)
+VALUES(event_in::text, aggregate_id, distance_from_latest_snapshot, now(), md) RETURNING id INTO inserted_id;
 return inserted_id;
 END;
 $$;
@@ -196,10 +376,10 @@ $$;
 
 
 --
--- Name: aggregate_events_01_mailqueue_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: aggregate_events_01_coop_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.aggregate_events_01_mailqueue_id_seq
+CREATE SEQUENCE public.aggregate_events_01_coop_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -210,6 +390,52 @@ CREATE SEQUENCE public.aggregate_events_01_mailqueue_id_seq
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: aggregate_events_01_coop; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.aggregate_events_01_coop (
+    id integer DEFAULT nextval('public.aggregate_events_01_coop_id_seq'::regclass) NOT NULL,
+    aggregate_id uuid NOT NULL,
+    event_id integer
+);
+
+
+--
+-- Name: aggregate_events_01_ledger_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.aggregate_events_01_ledger_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: aggregate_events_01_ledger; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.aggregate_events_01_ledger (
+    id integer DEFAULT nextval('public.aggregate_events_01_ledger_id_seq'::regclass) NOT NULL,
+    aggregate_id uuid NOT NULL,
+    event_id integer
+);
+
+
+--
+-- Name: aggregate_events_01_mailqueue_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.aggregate_events_01_mailqueue_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 
 --
 -- Name: aggregate_events_01_mailqueue; Type: TABLE; Schema: public; Owner: -
@@ -242,6 +468,64 @@ CREATE TABLE public.aggregate_events_01_user (
     id integer DEFAULT nextval('public.aggregate_events_01_user_id_seq'::regclass) NOT NULL,
     aggregate_id uuid NOT NULL,
     event_id integer
+);
+
+
+--
+-- Name: events_01_coop; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.events_01_coop (
+    id integer NOT NULL,
+    aggregate_id uuid NOT NULL,
+    event text NOT NULL,
+    published boolean DEFAULT false NOT NULL,
+    "timestamp" timestamp without time zone NOT NULL,
+    distance_from_latest_snapshot integer,
+    md text
+);
+
+
+--
+-- Name: events_01_coop_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.events_01_coop ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.events_01_coop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: events_01_ledger; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.events_01_ledger (
+    id integer NOT NULL,
+    aggregate_id uuid NOT NULL,
+    event text NOT NULL,
+    published boolean DEFAULT false NOT NULL,
+    "timestamp" timestamp without time zone NOT NULL,
+    distance_from_latest_snapshot integer,
+    md text
+);
+
+
+--
+-- Name: events_01_ledger_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.events_01_ledger ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.events_01_ledger_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -313,6 +597,58 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: snapshots_01_coop_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.snapshots_01_coop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: snapshots_01_coop; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.snapshots_01_coop (
+    id integer DEFAULT nextval('public.snapshots_01_coop_id_seq'::regclass) NOT NULL,
+    snapshot text NOT NULL,
+    event_id integer,
+    aggregate_id uuid NOT NULL,
+    "timestamp" timestamp without time zone NOT NULL,
+    is_deleted boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: snapshots_01_ledger_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.snapshots_01_ledger_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: snapshots_01_ledger; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.snapshots_01_ledger (
+    id integer DEFAULT nextval('public.snapshots_01_ledger_id_seq'::regclass) NOT NULL,
+    snapshot text NOT NULL,
+    event_id integer,
+    aggregate_id uuid NOT NULL,
+    "timestamp" timestamp without time zone NOT NULL,
+    is_deleted boolean DEFAULT false NOT NULL
+);
+
+
+--
 -- Name: snapshots_01_mailqueue_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -365,6 +701,38 @@ CREATE TABLE public.snapshots_01_user (
 
 
 --
+-- Name: aggregate_events_01_coop aggregate_events_01_coop_event_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aggregate_events_01_coop
+    ADD CONSTRAINT aggregate_events_01_coop_event_id_key UNIQUE (event_id);
+
+
+--
+-- Name: aggregate_events_01_coop aggregate_events_01_coop_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aggregate_events_01_coop
+    ADD CONSTRAINT aggregate_events_01_coop_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: aggregate_events_01_ledger aggregate_events_01_ledger_event_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aggregate_events_01_ledger
+    ADD CONSTRAINT aggregate_events_01_ledger_event_id_key UNIQUE (event_id);
+
+
+--
+-- Name: aggregate_events_01_ledger aggregate_events_01_ledger_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aggregate_events_01_ledger
+    ADD CONSTRAINT aggregate_events_01_ledger_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: aggregate_events_01_mailqueue aggregate_events_01_mailqueue_event_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -397,6 +765,22 @@ ALTER TABLE ONLY public.aggregate_events_01_user
 
 
 --
+-- Name: events_01_coop events_coop_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.events_01_coop
+    ADD CONSTRAINT events_coop_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: events_01_ledger events_ledger_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.events_01_ledger
+    ADD CONSTRAINT events_ledger_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: events_01_mailqueue events_mailqueue_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -421,6 +805,22 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: snapshots_01_coop snapshots_coop_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.snapshots_01_coop
+    ADD CONSTRAINT snapshots_coop_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: snapshots_01_ledger snapshots_ledger_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.snapshots_01_ledger
+    ADD CONSTRAINT snapshots_ledger_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: snapshots_01_mailqueue snapshots_mailqueue_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -437,6 +837,20 @@ ALTER TABLE ONLY public.snapshots_01_user
 
 
 --
+-- Name: ix_01_aggregate_events_coop_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_aggregate_events_coop_id ON public.aggregate_events_01_coop USING btree (aggregate_id);
+
+
+--
+-- Name: ix_01_aggregate_events_ledger_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_aggregate_events_ledger_id ON public.aggregate_events_01_ledger USING btree (aggregate_id);
+
+
+--
 -- Name: ix_01_aggregate_events_mailqueue_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -448,6 +862,34 @@ CREATE INDEX ix_01_aggregate_events_mailqueue_id ON public.aggregate_events_01_m
 --
 
 CREATE INDEX ix_01_aggregate_events_user_id ON public.aggregate_events_01_user USING btree (aggregate_id);
+
+
+--
+-- Name: ix_01_events_coop_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_events_coop_id ON public.events_01_coop USING btree (aggregate_id);
+
+
+--
+-- Name: ix_01_events_coop_timestamp; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_events_coop_timestamp ON public.events_01_coop USING btree ("timestamp");
+
+
+--
+-- Name: ix_01_events_ledger_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_events_ledger_id ON public.events_01_ledger USING btree (aggregate_id);
+
+
+--
+-- Name: ix_01_events_ledger_timestamp; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_events_ledger_timestamp ON public.events_01_ledger USING btree ("timestamp");
 
 
 --
@@ -476,6 +918,48 @@ CREATE INDEX ix_01_events_user_id ON public.events_01_user USING btree (aggregat
 --
 
 CREATE INDEX ix_01_events_user_timestamp ON public.events_01_user USING btree ("timestamp");
+
+
+--
+-- Name: ix_01_snapshot_coop_aggregate_id_and_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshot_coop_aggregate_id_and_id ON public.snapshots_01_coop USING btree (aggregate_id, id DESC);
+
+
+--
+-- Name: ix_01_snapshot_coop_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshot_coop_event_id ON public.snapshots_01_coop USING btree (event_id);
+
+
+--
+-- Name: ix_01_snapshot_coop_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshot_coop_id ON public.snapshots_01_coop USING btree (aggregate_id);
+
+
+--
+-- Name: ix_01_snapshot_ledger_aggregate_id_and_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshot_ledger_aggregate_id_and_id ON public.snapshots_01_ledger USING btree (aggregate_id, id DESC);
+
+
+--
+-- Name: ix_01_snapshot_ledger_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshot_ledger_event_id ON public.snapshots_01_ledger USING btree (event_id);
+
+
+--
+-- Name: ix_01_snapshot_ledger_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshot_ledger_id ON public.snapshots_01_ledger USING btree (aggregate_id);
 
 
 --
@@ -521,6 +1005,20 @@ CREATE INDEX ix_01_snapshot_user_id ON public.snapshots_01_user USING btree (agg
 
 
 --
+-- Name: ix_01_snapshots_coop_timestamp; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshots_coop_timestamp ON public.snapshots_01_coop USING btree ("timestamp");
+
+
+--
+-- Name: ix_01_snapshots_ledger_timestamp; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_01_snapshots_ledger_timestamp ON public.snapshots_01_ledger USING btree ("timestamp");
+
+
+--
 -- Name: ix_01_snapshots_mailqueue_timestamp; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -532,6 +1030,22 @@ CREATE INDEX ix_01_snapshots_mailqueue_timestamp ON public.snapshots_01_mailqueu
 --
 
 CREATE INDEX ix_01_snapshots_user_timestamp ON public.snapshots_01_user USING btree ("timestamp");
+
+
+--
+-- Name: aggregate_events_01_coop aggregate_events_01_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aggregate_events_01_coop
+    ADD CONSTRAINT aggregate_events_01_fk FOREIGN KEY (event_id) REFERENCES public.events_01_coop(id) MATCH FULL ON DELETE CASCADE;
+
+
+--
+-- Name: aggregate_events_01_ledger aggregate_events_01_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aggregate_events_01_ledger
+    ADD CONSTRAINT aggregate_events_01_fk FOREIGN KEY (event_id) REFERENCES public.events_01_ledger(id) MATCH FULL ON DELETE CASCADE;
 
 
 --
@@ -548,6 +1062,22 @@ ALTER TABLE ONLY public.aggregate_events_01_mailqueue
 
 ALTER TABLE ONLY public.aggregate_events_01_user
     ADD CONSTRAINT aggregate_events_01_fk FOREIGN KEY (event_id) REFERENCES public.events_01_user(id) MATCH FULL ON DELETE CASCADE;
+
+
+--
+-- Name: snapshots_01_coop event_01_coop_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.snapshots_01_coop
+    ADD CONSTRAINT event_01_coop_fk FOREIGN KEY (event_id) REFERENCES public.events_01_coop(id) MATCH FULL ON DELETE CASCADE;
+
+
+--
+-- Name: snapshots_01_ledger event_01_ledger_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.snapshots_01_ledger
+    ADD CONSTRAINT event_01_ledger_fk FOREIGN KEY (event_id) REFERENCES public.events_01_ledger(id) MATCH FULL ON DELETE CASCADE;
 
 
 --
@@ -570,7 +1100,7 @@ ALTER TABLE ONLY public.snapshots_01_user
 -- PostgreSQL database dump complete
 --
 
-\unrestrict YW9NRenFXa6rCACz8IZ7sz8xBIviBHRMBRc1rCjoqftgimifR6dfQrwlyxNNnDf
+\unrestrict KmtohlGJYBssa528t9QXqgmaVhG7zX7T38LcqBhLp2G8yo3ugzQu1Xw8hI4KtoT
 
 
 --
@@ -579,4 +1109,6 @@ ALTER TABLE ONLY public.snapshots_01_user
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('20260614110920'),
-    ('20260615072901');
+    ('20260615072901'),
+    ('20260616063031'),
+    ('20260616142142');

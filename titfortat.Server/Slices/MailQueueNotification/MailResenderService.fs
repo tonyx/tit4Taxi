@@ -12,7 +12,7 @@ open System.Threading.Tasks
 open TitForTat.Shared.Commons
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Configuration
-open titfortat.MessagesScheduler
+open TitForTat.MessagesScheduler
 
 type MailResenderService(
     configuration: IConfiguration,

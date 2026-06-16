@@ -1,4 +1,4 @@
-namespace titfortat.Services
+namespace TitForTat.Services
 open System.Threading
 open System
 open Sharpino
@@ -12,14 +12,15 @@ open Sharpino.Core
 open Sharpino.Storage
 open TitForTat.Shared.Commons
 open FsToolkit.ErrorHandling
-open titfortat.Domain
+open TitForTat.Domain
 open TitForTat.Domain.User
-open titfortat.Shared.Services
+open TitForTat.Shared.Services
 
 type UserService
     (eventStore: IEventStore<string>)  =
         let messageSender = MessageSenders.NoSender
-
+        let userStateViewer = CommandHandler.getAggregateStorageFreshStateViewerAsync<User, UserEvent, string> eventStore
+ 
         member this.SetAppUserUnsafe (userId: UserId, appUserInfo: AppUserInfo, ?ct: CancellationToken) =
             taskResult {
                 let ct = defaultArg ct CancellationToken.None
@@ -86,6 +87,26 @@ type UserService
                         (ct |> Some)
                 return result
             }
+        member this.GetAllUsers (context: UserContext, ?ct: CancellationToken) =
+            taskResult {
+                let ct = defaultArg ct CancellationToken.None
+                let! users = 
+                    StateView.getAllAggregateStatesAsync<User, UserEvent, string>
+                        eventStore
+                        (ct |> Some)
+                return users |>> snd
+            }
+
+        member this.GetUsers (context: UserContext, userIds:list<UserId>, ?ct: CancellationToken) =
+            taskResult {
+                let ct = defaultArg ct CancellationToken.None
+                let! users = 
+                    userIds
+                    |> List.traverseTaskResultM
+                            (fun userId -> 
+                                userStateViewer (ct |> Some) userId.Value)
+                return users |>> snd
+            }
 
         interface IUserService with    
             member this.SetAppUserInfoUnsafe (userId: UserId, appUserInfo: AppUserInfo, ct: CancellationToken option): Tasks.Task<Result<unit,string>> = 
@@ -108,6 +129,15 @@ type UserService
                     }
             member this.CreateUserUnsafe (userId: UserId, appUserInfo: AppUserInfo, ?ct: CancellationToken) = 
                 this.CreateUserUnsafe (userId, appUserInfo, ?ct = ct) 
+
+            member this.GetAllUsers (context: UserContext, ?ct: CancellationToken) = 
+                let ct = defaultArg ct CancellationToken.None
+                this.GetAllUsers(context, ct)
+
+            member this.GetUsers (context: UserContext, userIds: List<UserId>, ?ct: CancellationToken) = 
+                let ct = defaultArg ct CancellationToken.None
+                this.GetUsers(context, userIds, ct)
+                
     
             
 

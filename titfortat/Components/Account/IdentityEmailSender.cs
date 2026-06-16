@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using titfortat.Data;
+using TitForTat.Data;
 using TitForTat.Shared.Infrastructure.Services;
 
-namespace titfortat.Components.Account;
+namespace TitForTat.Components.Account;
 
 internal sealed class IdentityEmailSender : IEmailSender<ApplicationUser>
 {

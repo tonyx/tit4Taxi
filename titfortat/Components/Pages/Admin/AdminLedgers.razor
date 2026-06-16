@@ -1,0 +1,333 @@
+@page "/Admin/Ledgers"
+@attribute [Authorize(Roles = "ADMIN")]
+@using TitForTat.Services
+@using TitForTat.Shared.Services
+@using static TitForTat.Shared.Commons
+@using static TitForTat.Domain.Coop
+@using static TitForTat.Domain.Ledger
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using TitForTat.Shared
+@inject ILedgerService LedgerService
+@inject ICoopService CoopService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Manage Ledgers</PageTitle>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 16px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center py-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 p-2 rounded-3">
+                            <i class="bi bi-journal-text fs-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0 fw-bold">Ledger Management</h3>
+                            <p class="mb-0 text-white-50 small">View and manage cooperative ledgers and flows</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                            @errorMessage
+                            <button type="button" class="btn-close" @onclick="() => errorMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @successMessage
+                            <button type="button" class="btn-close" @onclick="() => successMessage = null" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Create Ledger Form -->
+                    <div class="p-4 mb-5 border rounded-4 bg-light bg-opacity-50 shadow-sm">
+                        <h4 class="mb-3 fw-bold text-dark fs-5"><i class="bi bi-plus-circle-fill me-2 text-primary"></i>Create New Ledger</h4>
+                        <EditForm Model="@newLedgerModel" OnValidSubmit="HandleCreateLedger">
+                            <DataAnnotationsValidator />
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="coop1" class="form-label fw-semibold text-secondary">Cooperative 1</label>
+                                    <select id="coop1" class="form-select form-select-lg bg-white shadow-sm" style="border-radius: 10px;" @bind="newLedgerModel.Coop1IdString">
+                                        <option value="">-- Select Cooperative 1 --</option>
+                                        @if (coops != null)
+                                        {
+                                            @foreach (var coop in coops)
+                                            {
+                                                <option value="@coop.CoopId.Value">@coop.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <ValidationMessage For="() => newLedgerModel.Coop1IdString" class="text-danger mt-1 small" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="coop2" class="form-label fw-semibold text-secondary">Cooperative 2</label>
+                                    <select id="coop2" class="form-select form-select-lg bg-white shadow-sm" style="border-radius: 10px;" @bind="newLedgerModel.Coop2IdString">
+                                        <option value="">-- Select Cooperative 2 --</option>
+                                        @if (coops != null)
+                                        {
+                                            @foreach (var coop in coops)
+                                            {
+                                                <option value="@coop.CoopId.Value">@coop.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <ValidationMessage For="() => newLedgerModel.Coop2IdString" class="text-danger mt-1 small" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="flow1" class="form-label fw-semibold text-secondary">Estimated Flow: Coop 1 → Coop 2</label>
+                                    <InputNumber id="flow1" class="form-control form-control-lg bg-white shadow-sm" style="border-radius: 10px;" placeholder="e.g. 150.0" @bind-Value="newLedgerModel.Flow1" />
+                                    <ValidationMessage For="() => newLedgerModel.Flow1" class="text-danger mt-1 small" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="flow2" class="form-label fw-semibold text-secondary">Estimated Flow: Coop 2 → Coop 1</label>
+                                    <InputNumber id="flow2" class="form-control form-control-lg bg-white shadow-sm" style="border-radius: 10px;" placeholder="e.g. 100.0" @bind-Value="newLedgerModel.Flow2" />
+                                    <ValidationMessage For="() => newLedgerModel.Flow2" class="text-danger mt-1 small" />
+                                </div>
+
+                                <div class="col-12 mt-4 text-end">
+                                    <button type="submit" class="btn btn-primary btn-lg shadow px-5" style="border-radius: 10px; font-weight: 600;">
+                                        <i class="bi bi-plus-lg me-2"></i>Create Ledger
+                                    </button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    </div>
+
+                    <!-- Existing Ledgers Section -->
+                    <h4 class="mb-3 fw-bold text-dark fs-5"><i class="bi bi-list-stars me-2 text-primary"></i>Active Ledgers</h4>
+                    @if (ledgers == null || coops == null)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Retrieving data...</p>
+                        </div>
+                    }
+                    else if (!ledgers.Any())
+                    {
+                        <div class="text-center py-5 border border-dashed rounded-4 bg-white shadow-sm">
+                            <i class="bi bi-folder-x fs-1 text-muted"></i>
+                            <p class="mt-3 mb-0 text-secondary fw-semibold">No ledgers created yet.</p>
+                            <p class="text-muted small">Select coops and set up flows to create a ledger.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive shadow-sm rounded-4">
+                            <table class="table table-hover align-middle mb-0 bg-white">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="ps-4">Ledger ID</th>
+                                        <th>Cooperative 1</th>
+                                        <th>Cooperative 2</th>
+                                        <th class="text-center">Flow (1 → 2)</th>
+                                        <th class="text-center">Flow (2 → 1)</th>
+                                        <th class="text-center">Exchange Rate 1 → 2</th>
+                                        <th class="text-center">Exchange Rate 2 → 1</th>
+                                        <th class="text-center">Tokens Spent (Coop 1)</th>
+                                        <th class="text-center">Tokens Spent (Coop 2)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ledger in ledgers)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 font-monospace small">
+                                                <a href="/Ledger/@ledger.LedgerId.Value" class="text-primary fw-bold text-decoration-none" title="View Ledger Details: @ledger.LedgerId.Value">
+                                                    @ledger.LedgerId.Value.ToString()[..8]...
+                                                </a>
+                                            </td>
+                                            <td class="fw-bold text-dark">
+                                                @GetCoopName(ledger.Coops.Item1)
+                                            </td>
+                                            <td class="fw-bold text-dark">
+                                                @GetCoopName(ledger.Coops.Item2)
+                                            </td>
+                                            <td class="text-center text-primary fw-semibold">
+                                                @ledger.EstimatedFlowFromCoop1TerritoryToCoop2Territory.ToString("N2")
+                                            </td>
+                                            <td class="text-center text-primary fw-semibold">
+                                                @ledger.EstimatedFlowFromCoop2TerritoryToCoop1Territory.ToString("N2")
+                                            </td>
+                                            <td class="text-center text-secondary small">
+                                                @ledger.ExchangeRateForCoop1ToLoadOnCoop2Territory().ToString("N4")
+                                            </td>
+                                            <td class="text-center text-secondary small">
+                                                @ledger.ExchangeRateForCoop2ToLoadOnCoop1Territory().ToString("N4")
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                    @ledger.TokenSpentByCoop1.ToString("N2")
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                    @ledger.TokenSpentByCoop2.ToString("N2")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Coop>? coops;
+    private List<Ledger>? ledgers;
+    private string? errorMessage;
+    private string? successMessage;
+    private LedgerFormModel newLedgerModel = new();
+    private UserContext? userContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userContext = ConverterUtils.fromClaimsPrincipal(authState.User);
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        if (userContext == null) return;
+
+        var coopsResult = await CoopService.GetAllCoops(userContext, CancellationToken.None);
+        if (coopsResult.IsOk)
+        {
+            coops = coopsResult.ResultValue.ToList();
+        }
+        else
+        {
+            errorMessage = $"Failed to load cooperatives: {coopsResult.ErrorValue}";
+        }
+
+        var ledgersResult = await LedgerService.GetAllLedgers(userContext, CancellationToken.None);
+        if (ledgersResult.IsOk)
+        {
+            ledgers = ledgersResult.ResultValue.ToList();
+        }
+        else
+        {
+            errorMessage = $"Failed to load ledgers: {ledgersResult.ErrorValue}";
+        }
+    }
+
+    private string GetCoopName(CoopId coopId)
+    {
+        if (coops == null) return coopId.Value.ToString();
+        var coop = coops.FirstOrDefault(c => c.CoopId.Value == coopId.Value);
+        return coop != null ? coop.Name : coopId.Value.ToString();
+    }
+
+    private async Task HandleCreateLedger()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (userContext == null)
+        {
+            errorMessage = "User is not authenticated.";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(newLedgerModel.Coop1IdString) || string.IsNullOrEmpty(newLedgerModel.Coop2IdString))
+        {
+            errorMessage = "Please select both cooperatives.";
+            return;
+        }
+
+        if (newLedgerModel.Coop1IdString == newLedgerModel.Coop2IdString)
+        {
+            errorMessage = "Cooperative 1 and Cooperative 2 must be different.";
+            return;
+        }
+
+        if (!Guid.TryParse(newLedgerModel.Coop1IdString, out var coop1Guid) ||
+            !Guid.TryParse(newLedgerModel.Coop2IdString, out var coop2Guid))
+        {
+            errorMessage = "Invalid Cooperative selected.";
+            return;
+        }
+
+        if (newLedgerModel.Flow1 <= 0 || newLedgerModel.Flow2 <= 0)
+        {
+            errorMessage = "Flow estimates must be positive values greater than zero.";
+            return;
+        }
+
+        // Check if ledger already exists in either direction
+        if (ledgers != null)
+        {
+            var alreadyExists = ledgers.Any(l =>
+                (l.Coops.Item1.Value == coop1Guid && l.Coops.Item2.Value == coop2Guid) ||
+                (l.Coops.Item1.Value == coop2Guid && l.Coops.Item2.Value == coop1Guid)
+            );
+
+            if (alreadyExists)
+            {
+                errorMessage = "A ledger already exists between these two cooperatives.";
+                return;
+            }
+        }
+
+        var coop1Id = CoopId.NewCoopId(coop1Guid);
+        var coop2Id = CoopId.NewCoopId(coop2Guid);
+
+        var result = await LedgerService.CreateLedger(
+            userContext, 
+            coop1Id, 
+            coop2Id, 
+            newLedgerModel.Flow1, 
+            newLedgerModel.Flow2, 
+            CancellationToken.None
+        );
+
+        if (result.IsOk)
+        {
+            successMessage = "Ledger created successfully.";
+            newLedgerModel = new LedgerFormModel();
+            await LoadData();
+        }
+        else
+        {
+            errorMessage = $"Failed to create ledger: {result.ErrorValue}";
+        }
+    }
+
+    public class LedgerFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Cooperative 1 is required.")]
+        public string Coop1IdString { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Cooperative 2 is required.")]
+        public string Coop2IdString { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Flow is required.")]
+        [System.ComponentModel.DataAnnotations.Range(0.0001, double.MaxValue, ErrorMessage = "Flow must be a positive number.")]
+        public double Flow1 { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Flow is required.")]
+        [System.ComponentModel.DataAnnotations.Range(0.0001, double.MaxValue, ErrorMessage = "Flow must be a positive number.")]
+        public double Flow2 { get; set; }
+    }
+}

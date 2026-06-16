@@ -1,0 +1,384 @@
+@page "/TaxiDriver"
+@attribute [Authorize]
+@using TitForTat.Services
+@using TitForTat.Shared.Services
+@using static TitForTat.Shared.Commons
+@using static TitForTat.Domain.Coop
+@using static TitForTat.Domain.Ledger
+@using static TitForTat.Domain.User
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using TitForTat.Shared
+@inject ICoopService CoopService
+@inject ILedgerService LedgerService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Taxi Driver Portal</PageTitle>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="card border-0 shadow-lg mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #212529 0%, #343a40 100%);">
+                <div class="card-body p-4 text-white d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-warning text-dark p-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center">
+                            <i class="bi bi-car-front-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0 fw-bold">Taxi Driver Portal</h3>
+                            <p class="mb-0 text-white-50 small">Manage your cooperative membership and view active ledgers</p>
+                        </div>
+                    </div>
+                    @if (userCoop != null)
+                    {
+                        <div class="text-end">
+                            <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill shadow-sm">
+                                <i class="bi bi-building me-1"></i> @userCoop.Name
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Error and Success Messages -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 12px;">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                    @errorMessage
+                    <button type="button" class="btn-close" @onclick="() => errorMessage = null" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 12px;">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @successMessage
+                    <button type="button" class="btn-close" @onclick="() => successMessage = null" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading driver dashboard...</p>
+                </div>
+            }
+            else if (userCoop == null)
+            {
+                <!-- Unaffiliated User: Join a Coop Form -->
+                <div class="card border-0 shadow-lg text-center p-5" style="border-radius: 16px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                    <div class="text-warning mb-3">
+                        <i class="bi bi-building-exclamation" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">No Cooperative Assigned</h3>
+                    <p class="text-muted mx-auto" style="max-width: 600px;">
+                        You are not currently affiliated with any taxi cooperative. To view active ledgers and record driver actions, please select the cooperative you belong to below.
+                    </p>
+
+                    <div class="mt-4 mx-auto" style="max-width: 450px;">
+                        <div class="input-group input-group-lg shadow-sm mb-3">
+                            <label class="input-group-text bg-light border-end-0" for="joinCoopSelect" style="border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                                <i class="bi bi-people-fill text-secondary"></i>
+                            </label>
+                            <select id="joinCoopSelect" class="form-select border-start-0" style="border-top-right-radius: 10px; border-bottom-right-radius: 10px;" @bind="selectedCoopIdString">
+                                <option value="">-- Select your Cooperative --</option>
+                                @if (allCoops != null)
+                                {
+                                    @foreach (var coop in allCoops)
+                                    {
+                                        <option value="@coop.CoopId.Value">@coop.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <button class="btn btn-warning btn-lg w-100 shadow fw-bold mt-2" style="border-radius: 10px;" @onclick="HandleJoinCoop" disabled="@(string.IsNullOrEmpty(selectedCoopIdString))">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Join Cooperative
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Affiliated User Dashboard -->
+                <div class="row g-4">
+                    <!-- Coop info Card -->
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: #f8f9fa;">
+                            <div class="card-body p-4 d-flex flex-column">
+                                <h5 class="fw-bold text-dark mb-3">
+                                    <i class="bi bi-info-circle-fill text-primary me-2"></i>Cooperative Info
+                                </h5>
+                                <div class="mb-3">
+                                    <label class="text-secondary small fw-semibold">Name</label>
+                                    <div class="fw-bold text-dark">@userCoop.Name</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-secondary small fw-semibold">Your Status</label>
+                                    <div>
+                                        @if (userCoop.IsManager(currentUserId))
+                                        {
+                                            <span class="badge bg-danger rounded-pill px-3 py-1.5"><i class="bi bi-shield-fill me-1"></i>Manager</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark rounded-pill px-3 py-1.5">Member</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-secondary small fw-semibold">Total Members</label>
+                                    <div class="fw-semibold text-dark">@(userCoop.Members.Length + userCoop.Managers.Length)</div>
+                                </div>
+                                @if (userCoop.CenterCoordinate != null && Microsoft.FSharp.Core.OptionModule.IsSome(userCoop.CenterCoordinate))
+                                {
+                                    <div class="mb-3">
+                                        <label class="text-secondary small fw-semibold">Coordinates</label>
+                                        <div class="text-muted small">
+                                            Lat: @userCoop.CenterCoordinate.Value.Latitude.ToString("F6"), Lng: @userCoop.CenterCoordinate.Value.Longitude.ToString("F6")
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Ledgers List -->
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4">
+                                    <i class="bi bi-list-stars text-primary me-2"></i>Involved Active Ledgers
+                                </h5>
+
+                                @if (involvedLedgers == null)
+                                {
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                }
+                                else if (!involvedLedgers.Any())
+                                {
+                                    <div class="text-center py-5 border border-dashed rounded-4 bg-light bg-opacity-50">
+                                        <i class="bi bi-folder-x fs-1 text-muted"></i>
+                                        <p class="mt-3 mb-0 text-secondary fw-semibold">No active ledgers for your cooperative.</p>
+                                        <p class="text-muted small">An administrator must set up ledgers involving your cooperative.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive shadow-sm rounded-4 mb-3">
+                                        <table class="table table-hover align-middle mb-0 bg-white">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th class="ps-4">Other Cooperative</th>
+                                                    <th class="text-center">Flow Ratio</th>
+                                                    <th class="text-center">Your Spent Tokens</th>
+                                                    <th class="text-center">Exchange Rate</th>
+                                                    <th class="pe-4 text-end">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var ledger in involvedLedgers)
+                                                {
+                                                    var isCoop1 = ledger.Coops.Item1.Value == userCoop.CoopId.Value;
+                                                    var otherCoopId = isCoop1 ? ledger.Coops.Item2 : ledger.Coops.Item1;
+                                                    var flowRatio = isCoop1 
+                                                        ? $"{ledger.EstimatedFlowFromCoop1TerritoryToCoop2Territory:N1} → {ledger.EstimatedFlowFromCoop2TerritoryToCoop1Territory:N1}"
+                                                        : $"{ledger.EstimatedFlowFromCoop2TerritoryToCoop1Territory:N1} → {ledger.EstimatedFlowFromCoop1TerritoryToCoop2Territory:N1}";
+                                                    
+                                                    var spentTokens = isCoop1 ? ledger.TokenSpentByCoop1 : ledger.TokenSpentByCoop2;
+                                                    var exchangeRate = isCoop1
+                                                        ? ledger.ExchangeRateForCoop1ToLoadOnCoop2Territory()
+                                                        : ledger.ExchangeRateForCoop2ToLoadOnCoop1Territory();
+
+                                                    <tr>
+                                                        <td class="ps-4 fw-bold text-dark">
+                                                            @GetCoopName(otherCoopId)
+                                                        </td>
+                                                        <td class="text-center text-secondary small">
+                                                            @flowRatio
+                                                        </td>
+                                                        <td class="text-center fw-semibold text-primary">
+                                                            @spentTokens.ToString("N2")
+                                                        </td>
+                                                        <td class="text-center text-muted small">
+                                                            @exchangeRate.ToString("N4")
+                                                        </td>
+                                                        <td class="pe-4 text-end">
+                                                            <button class="btn btn-sm btn-outline-warning shadow-sm" style="border-radius: 8px; font-weight: 600;" @onclick="() => HandleSpendToken(ledger.LedgerId)">
+                                                                <i class="bi bi-plus-circle me-1"></i>Spend Token
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoading = true;
+    private Coop? userCoop;
+    private List<Coop>? allCoops;
+    private List<TitForTat.Domain.Ledger.Ledger>? involvedLedgers;
+    private string? selectedCoopIdString;
+    private string? errorMessage;
+    private string? successMessage;
+    private UserContext? userContext;
+    private UserId currentUserId = UserId.New();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboard();
+    }
+
+    private async Task LoadDashboard()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            userContext = ConverterUtils.fromClaimsPrincipal(authState.User);
+
+            if (userContext == null || userContext.IsAnonymous)
+            {
+                errorMessage = "You must be logged in to view this page.";
+                isLoading = false;
+                return;
+            }
+
+            if (userContext is UserContext.Authenticated authenticated)
+            {
+                currentUserId = authenticated.UserId;
+            }
+
+            // Load cooperatives
+            var coopsResult = await CoopService.GetAllCoops(userContext, CancellationToken.None);
+            if (coopsResult.IsOk)
+            {
+                allCoops = coopsResult.ResultValue.ToList();
+                // Find user's coop (either as member or manager)
+                userCoop = allCoops.FirstOrDefault(c => c.IsMember(currentUserId) || c.IsManager(currentUserId));
+            }
+            else
+            {
+                errorMessage = $"Failed to load cooperatives: {coopsResult.ErrorValue}";
+            }
+
+            // Load ledgers if affiliated
+            if (userCoop != null)
+            {
+                var ledgersResult = await LedgerService.GetAllLedgers(userContext, CancellationToken.None);
+                if (ledgersResult.IsOk)
+                {
+                    involvedLedgers = ledgersResult.ResultValue
+                        .Where(l => l.Coops.Item1.Value == userCoop.CoopId.Value || l.Coops.Item2.Value == userCoop.CoopId.Value)
+                        .ToList();
+                }
+                else
+                {
+                    errorMessage = $"Failed to load ledgers: {ledgersResult.ErrorValue}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred loading the dashboard: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetCoopName(CoopId coopId)
+    {
+        if (allCoops == null) return coopId.Value.ToString();
+        var coop = allCoops.FirstOrDefault(c => c.CoopId.Value == coopId.Value);
+        return coop != null ? coop.Name : coopId.Value.ToString();
+    }
+
+    private async Task HandleJoinCoop()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (userContext == null || string.IsNullOrEmpty(selectedCoopIdString)) return;
+
+        if (!Guid.TryParse(selectedCoopIdString, out var coopGuid))
+        {
+            errorMessage = "Invalid cooperative selected.";
+            return;
+        }
+
+        isLoading = true;
+        try
+        {
+            var coopId = CoopId.NewCoopId(coopGuid);
+            var result = await CoopService.AddMember(userContext, coopId, currentUserId, CancellationToken.None);
+            if (result.IsOk)
+            {
+                successMessage = "Successfully joined the cooperative!";
+                selectedCoopIdString = null;
+                await LoadDashboard();
+            }
+            else
+            {
+                errorMessage = $"Failed to join cooperative: {result.ErrorValue}";
+                isLoading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSpendToken(LedgerId ledgerId)
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (userContext == null || userCoop == null) return;
+
+        isLoading = true;
+        try
+        {
+            var result = await LedgerService.SpendToken(userContext, ledgerId, userCoop.CoopId, currentUserId, CancellationToken.None);
+            if (result.IsOk)
+            {
+                successMessage = "Token spent registered successfully!";
+                await LoadDashboard();
+            }
+            else
+            {
+                errorMessage = $"Failed to spend token: {result.ErrorValue}";
+                isLoading = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+            isLoading = false;
+        }
+    }
+}

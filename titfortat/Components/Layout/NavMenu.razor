@@ -1,4 +1,4 @@
-﻿@implements IDisposable
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
 
@@ -35,9 +35,43 @@
                 <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
             </NavLink>
         </div>
+        <AuthorizeView Roles="ADMIN, MANAGER">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Admin/RegistrationCodes">
+                        <span class="bi bi-key-fill" aria-hidden="true"></span> Registration PINs
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="ADMIN">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Admin/Coops">
+                        <span class="bi bi-people-fill" aria-hidden="true"></span> Manage Coops
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Admin/Ledgers">
+                        <span class="bi bi-journal-text" aria-hidden="true"></span> Manage Ledgers
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
         <AuthorizeView>
             <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="TaxiDriver">
+                        <span class="bi bi-car-front-fill" aria-hidden="true"></span> Taxi Driver
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="TaxiDriverMini">
+                        <span class="bi bi-phone-fill" aria-hidden="true"></span> Taxi Driver (Mini)
+                    </NavLink>
+                </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name

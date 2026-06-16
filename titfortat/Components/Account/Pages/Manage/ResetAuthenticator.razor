@@ -1,14 +1,14 @@
 @page "/Account/Manage/ResetAuthenticator"
 
 @using Microsoft.AspNetCore.Identity
-@using titfortat.Data
+@using TitForTat.Data
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ResetAuthenticator> Logger
 @inject IConfiguration Configuration
-@inject titfortat.Shared.Services.IUserService UserService
+@inject TitForTat.Shared.Services.IUserService UserService
 
 <PageTitle>Reset authenticator key</PageTitle>
 

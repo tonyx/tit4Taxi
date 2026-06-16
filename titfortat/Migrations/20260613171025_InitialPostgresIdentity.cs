@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace titfortat.Migrations
+namespace TitForTat.Migrations
 {
     /// <inheritdoc />
     public partial class InitialPostgresIdentity : Migration

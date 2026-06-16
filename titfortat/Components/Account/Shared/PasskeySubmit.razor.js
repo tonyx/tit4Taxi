@@ -1,4 +1,4 @@
-﻿const browserSupportsPasskeys =
+const browserSupportsPasskeys =
     typeof navigator.credentials !== 'undefined' &&
     typeof window.PublicKeyCredential !== 'undefined' &&
     typeof window.PublicKeyCredential.parseCreationOptionsFromJSON === 'function' &&
@@ -17,8 +17,9 @@ async function fetchWithErrorHandling(url, options = {}) {
     return response;
 }
 
-async function createCredential(headers, signal) {
-    const optionsResponse = await fetchWithErrorHandling('/Account/PasskeyCreationOptions', {
+async function createCredential(email, headers, signal) {
+    const url = email ? `/Account/RegisterPasskeyOptions?username=${email}` : '/Account/PasskeyCreationOptions';
+    const optionsResponse = await fetchWithErrorHandling(url, {
         method: 'POST',
         headers,
         signal,
@@ -76,7 +77,8 @@ customElements.define('passkey-submit', class extends HTMLElement {
         };
 
         if (this.attrs.operation === 'Create') {
-            return await createCredential(headers, signal);
+            const email = this.attrs.emailName ? new FormData(this.internals.form).get(this.attrs.emailName) : null;
+            return await createCredential(email, headers, signal);
         } else if (this.attrs.operation === 'Request') {
             const email = new FormData(this.internals.form).get(this.attrs.emailName);
             const mediation = useConditionalMediation ? 'conditional' : undefined;
@@ -90,29 +92,51 @@ customElements.define('passkey-submit', class extends HTMLElement {
         this.abortController?.abort();
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
-        const formData = new FormData();
+        
+        let credentialJson = '';
+        let errorMessage = '';
+
         try {
             const credential = await this.obtainCredential(useConditionalMediation, signal);
-            const credentialJson = JSON.stringify(credential);
-            formData.append(`${this.attrs.name}.CredentialJson`, credentialJson);
+            credentialJson = JSON.stringify(credential);
         } catch (error) {
             if (error.name === 'AbortError') {
-                // The user explicitly canceled the operation - return without error.
                 return;
             }
             console.error(error);
             if (useConditionalMediation) {
-                // An error occurred during conditional mediation, which is not user-initiated.
-                // We log the error in the console but do not relay it to the user.
                 return;
             }
-            const errorMessage = error.name === 'NotAllowedError'
+            errorMessage = error.name === 'NotAllowedError'
                 ? 'No passkey was provided by the authenticator.'
                 : error.message;
-            formData.append(`${this.attrs.name}.Error`, errorMessage);
         }
-        this.internals.setFormValue(formData);
-        this.internals.form.submit();
+
+        if (credentialJson) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `${this.attrs.name}.CredentialJson`;
+            input.value = credentialJson;
+            this.internals.form.appendChild(input);
+        }
+        
+        if (errorMessage) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `${this.attrs.name}.Error`;
+            input.value = errorMessage;
+            this.internals.form.appendChild(input);
+        }
+
+        // Add a hidden input to simulate the submit button being pressed
+        // so Blazor knows which form/action was triggered if necessary
+        const submitInput = document.createElement('input');
+        submitInput.type = 'hidden';
+        submitInput.name = '__passkeySubmit';
+        submitInput.value = '';
+        this.internals.form.appendChild(submitInput);
+
+        this.internals.form.requestSubmit();
     }
 
     async tryAutofillPasskey() {

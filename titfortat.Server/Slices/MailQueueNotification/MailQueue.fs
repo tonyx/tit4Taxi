@@ -1,11 +1,11 @@
-namespace titfortat.MessagesScheduler
+namespace TitForTat.MessagesScheduler
 open Mailjet.Client.TransactionalEmails
 open Sharpino.Core
 open Sharpino
 open System.Text.Json
 open TitForTat.Shared.Commons
 open FsToolkit.ErrorHandling
-open titfortat.Shared
+open TitForTat.Shared
 open System
 
 type MailQueueItem = 

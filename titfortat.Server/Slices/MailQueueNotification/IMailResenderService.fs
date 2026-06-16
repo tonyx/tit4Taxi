@@ -5,8 +5,8 @@ open System.Threading
 open System.Threading.Tasks
 open System.Runtime.InteropServices
 
-open titfortat.Shared
-open titfortat.MessagesScheduler
+open TitForTat.Shared
+open TitForTat.MessagesScheduler
 open TitForTat.Shared.Commons
 
 type IMailResenderService = 

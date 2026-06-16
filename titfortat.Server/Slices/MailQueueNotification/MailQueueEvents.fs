@@ -1,9 +1,9 @@
-namespace titfortat.MessagesScheduler
+namespace TitForTat.MessagesScheduler
 open Sharpino.Core
 open Sharpino
 open System.Text.Json
 open FsToolkit.ErrorHandling
-open titfortat.Shared
+open TitForTat.Shared
 open TitForTat.Shared.Commons
 open System
 

@@ -1,4 +1,4 @@
-﻿namespace titfortat.Shared
+﻿namespace TitForTat.Shared
 
 module Say =
     let hello name =
