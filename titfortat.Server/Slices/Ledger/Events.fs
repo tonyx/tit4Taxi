@@ -8,17 +8,17 @@ open System.Text.Json
 
 type LedgerEvent = 
     | TokenSpentEvent of CoopId * UserId
-    | EtimatedFlowFromCoop1TerritoryToCoop2TerritoryAdjusted of float
-    | EtimatedFlowFromCoop2TerritoryToCoop1TerritoryAdjusted of float
+    | Market1ValueSet of float
+    | Market2ValueSet of float
 
     interface Event<Ledger> with
         member this.Process ledger = 
             match this with
             | TokenSpentEvent (coopId, userId) -> ledger.SpendToken(coopId, userId)
-            | EtimatedFlowFromCoop1TerritoryToCoop2TerritoryAdjusted newFlow ->
-                ledger.AdjustEtimatedFlowFromCoop1TerritoryToCoop2Territory(newFlow) |> Ok
-            | EtimatedFlowFromCoop2TerritoryToCoop1TerritoryAdjusted newFlow ->
-                ledger.AdjustEtimatedFlowFromCoop2TerritoryToCoop1Territory(newFlow) |> Ok
+            | Market1ValueSet newFlow ->
+                ledger.SetMarket1Value(newFlow) |> Ok
+            | Market2ValueSet newFlow ->
+                ledger.SetMarket2Value(newFlow) |> Ok
 
     static member Deserialize (x: string): Result<LedgerEvent, string> =
         try

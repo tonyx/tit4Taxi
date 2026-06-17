@@ -159,16 +159,16 @@
                                                 @GetCoopName(ledger.Coops.Item2)
                                             </td>
                                             <td class="text-center text-primary fw-semibold">
-                                                @ledger.EstimatedFlowFromCoop1TerritoryToCoop2Territory.ToString("N2")
+                                                @ledger.Coop1MarketValue.ToString("N2")
                                             </td>
                                             <td class="text-center text-primary fw-semibold">
-                                                @ledger.EstimatedFlowFromCoop2TerritoryToCoop1Territory.ToString("N2")
+                                                @ledger.Coop2MarketValue.ToString("N2")
                                             </td>
                                             <td class="text-center text-secondary small">
-                                                @ledger.ExchangeRateForCoop1ToLoadOnCoop2Territory().ToString("N4")
+                                                @ledger.ExchangeRateAppliedToCoop1().ToString("N4")
                                             </td>
                                             <td class="text-center text-secondary small">
-                                                @ledger.ExchangeRateForCoop2ToLoadOnCoop1Territory().ToString("N4")
+                                                @ledger.ExchangeRateAppliedToCoop2().ToString("N4")
                                             </td>
                                             <td class="text-center">
                                                 <span class="badge bg-secondary rounded-pill px-3 py-2">

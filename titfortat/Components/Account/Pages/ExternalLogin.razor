@@ -42,11 +42,14 @@
                 <label for="Input.Email" class="form-label">Email</label>
                 <ValidationMessage For="() => Input.Email" />
             </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RegistrationCode" id="Input.RegistrationCode" class="form-control" autocomplete="off" placeholder="12345" />
-                <label for="Input.RegistrationCode" class="form-label">Registration PIN Code</label>
-                <ValidationMessage For="() => Input.RegistrationCode" />
-            </div>
+            @if (!isFirstUser)
+            {
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.RegistrationCode" id="Input.RegistrationCode" class="form-control" autocomplete="off" placeholder="12345" />
+                    <label for="Input.RegistrationCode" class="form-label">Registration PIN Code</label>
+                    <ValidationMessage For="() => Input.RegistrationCode" />
+                </div>
+            }
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
@@ -57,6 +60,7 @@
 
     private string? message;
     private ExternalLoginInfo? externalLoginInfo;
+    private bool isFirstUser;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -78,6 +82,7 @@
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
+        isFirstUser = !UserManager.Users.Any();
 
         if (RemoteError is not null)
         {
@@ -147,7 +152,7 @@
 
     private async Task OnValidSubmitAsync()
     {
-        if (!RegistrationCodeService.ValidateAndConsumeCode(Input.RegistrationCode))
+        if (!isFirstUser && !RegistrationCodeService.ValidateAndConsumeCode(Input.RegistrationCode))
         {
             message = "Error: Invalid or expired registration PIN code.";
             return;
@@ -240,8 +245,6 @@
         [EmailAddress]
         public string Email { get; set; } = "";
 
-        [Required]
-        [StringLength(5, MinimumLength = 5, ErrorMessage = "The registration code must be exactly 5 digits.")]
         [Display(Name = "Registration PIN Code")]
         public string RegistrationCode { get; set; } = "";
     }

@@ -1,0 +1,63 @@
+--- titfortat/Components/Account/Pages/Register.razor
++++ titfortat/Components/Account/Pages/Register.razor
+@@ -22,7 +22,7 @@
+ 
+ <h1>Register</h1>
+ 
+-@if (!RegistrationCodeService.IsAnyCodeActive())
++@if (!RegistrationCodeService.IsAnyCodeActive() && !isFirstUser)
+ {
+     <div class="alert alert-warning text-center my-4 animate__animated animate__fadeIn" role="alert" style="border-radius: 12px; font-weight: 500;">
+         <i class="bi bi-exclamation-triangle-fill me-2"></i>
+@@ -54,11 +54,13 @@
+                     <label for="Input.ConfirmPassword">Confirm Password</label>
+                     <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                 </div>
+-                <div class="form-floating mb-3">
+-                    <InputText @bind-Value="Input.RegistrationCode" id="registration-pin-input" class="form-control" autocomplete="off" aria-required="true" placeholder="12345" />
+-                    <label for="registration-pin-input">Registration PIN Code</label>
+-                    <ValidationMessage For="() => Input.RegistrationCode" class="text-danger" />
+-                </div>
++                @if (!isFirstUser)
++                {
++                    <div class="form-floating mb-3">
++                        <InputText @bind-Value="Input.RegistrationCode" id="registration-pin-input" class="form-control" autocomplete="off" aria-required="true" placeholder="12345" />
++                        <label for="registration-pin-input">Registration PIN Code</label>
++                        <ValidationMessage For="() => Input.RegistrationCode" class="text-danger" />
++                    </div>
++                }
+                 <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                 <hr />
+                 <div class="d-flex flex-column">
+@@ -79,6 +81,7 @@
+ @code {
+     private IEnumerable<IdentityError>? identityErrors;
+     private EditContext editContext = default!;
++    private bool isFirstUser;
+ 
+     [SupplyParameterFromForm]
+     private InputModel Input { get; set; } = default!;
+@@ -94,13 +97,14 @@
+     protected override void OnInitialized()
+     {
+         Input ??= new();
+         editContext = new EditContext(Input);
++        isFirstUser = !UserManager.Users.Any();
+     }
+ 
+     public async Task RegisterUser()
+     {
+-        if (!RegistrationCodeService.ValidateAndConsumeCode(Input.RegistrationCode))
++        if (!isFirstUser && !RegistrationCodeService.ValidateAndConsumeCode(Input.RegistrationCode))
+         {
+             identityErrors = [new IdentityError { Description = "Invalid or expired registration PIN code." }];
+             return;
+@@ -237,8 +241,6 @@
+         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+         public string ConfirmPassword { get; set; } = "";
+ 
+-        [Required]
+-        [StringLength(5, MinimumLength = 5, ErrorMessage = "The registration code must be exactly 5 digits.")]
+         [Display(Name = "Registration PIN Code")]
+         public string RegistrationCode { get; set; } = "";
+     }

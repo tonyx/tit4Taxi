@@ -13,6 +13,6 @@ type ILedgerService =
     abstract member GetLedger: context: UserContext * ledgerId: LedgerId * ?ct: CancellationToken -> Task<Result<Ledger, string>>
     abstract member SpendToken: context: UserContext * ledgerId: LedgerId * coop: CoopId * user: UserId * ?ct: CancellationToken -> Task<Result<unit, string>>
     abstract member GetAllLedgers: context: UserContext * ?ct: CancellationToken -> Task<Result<List<Ledger>, string>>
-    abstract member AdjustFlowFromCoop1TerritoryToCoop2Territory: context: UserContext * ledgerId: LedgerId * flow1: float * ?ct: CancellationToken -> Task<Result<unit, string>>
-    abstract member AdjustFlowFromCoop2TerritoryToCoop1Territory: context: UserContext * ledgerId: LedgerId * flow2: float * ?ct: CancellationToken -> Task<Result<unit, string>>
+    abstract member SetMarket1Value: context: UserContext * ledgerId: LedgerId * flow1: float * ?ct: CancellationToken -> Task<Result<unit, string>>
+    abstract member SetMarket2Value: context: UserContext * ledgerId: LedgerId * flow2: float * ?ct: CancellationToken -> Task<Result<unit, string>>
     

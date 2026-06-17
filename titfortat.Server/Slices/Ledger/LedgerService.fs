@@ -75,10 +75,10 @@ type LedgerService (eventStore: IEventStore<string>) =
             return result |>> snd
         }
 
-    member this.AdjustFlowFromCoop1TerritoryToCoop2Territory (context: UserContext, ledgerId: LedgerId, flow1: float, ?ct: CancellationToken) =
+    member this.SetMarket1Value (context: UserContext, ledgerId: LedgerId, flow1: float, ?ct: CancellationToken) =
         let ct = defaultArg ct CancellationToken.None
         taskResult {
-            let cmd = AdjustEtimatedFlowFromCoop1TerritoryToCoop2Territory flow1
+            let cmd = SetMarket1Value flow1
             let! result = 
                 runAggregateCommandMdAsync<Ledger, LedgerEvent, string>
                     ledgerId.Value
@@ -90,10 +90,10 @@ type LedgerService (eventStore: IEventStore<string>) =
             return result
         }
 
-    member this.AdjustFlowFromCoop2TerritoryToCoop1Territory (context: UserContext, ledgerId: LedgerId, flow2: float, ?ct: CancellationToken) =
+    member this.SetMarket2Value (context: UserContext, ledgerId: LedgerId, flow2: float, ?ct: CancellationToken) =
         let ct = defaultArg ct CancellationToken.None
         taskResult {
-            let cmd = AdjustEtimatedFlowFromCoop2TerritoryToCoop1Territory flow2
+            let cmd = SetMarket2Value flow2
             let! result = 
                 runAggregateCommandMdAsync<Ledger, LedgerEvent, string>
                     ledgerId.Value
@@ -114,7 +114,7 @@ type LedgerService (eventStore: IEventStore<string>) =
             this.GetLedger (context, ledgerId, ?ct = ct)
         member this.GetAllLedgers (context, ?ct) =
             this.GetAllLedgers (context, ?ct = ct)
-        member this.AdjustFlowFromCoop1TerritoryToCoop2Territory (context, ledgerId, flow1, ?ct) =
-            this.AdjustFlowFromCoop1TerritoryToCoop2Territory (context, ledgerId, flow1, ?ct = ct)
-        member this.AdjustFlowFromCoop2TerritoryToCoop1Territory (context, ledgerId, flow2, ?ct) =
-            this.AdjustFlowFromCoop2TerritoryToCoop1Territory (context, ledgerId, flow2, ?ct = ct)
+        member this.SetMarket1Value (context, ledgerId, flow1, ?ct) =
+            this.SetMarket1Value (context, ledgerId, flow1, ?ct = ct)
+        member this.SetMarket2Value (context, ledgerId, flow2, ?ct) =
+            this.SetMarket2Value (context, ledgerId, flow2, ?ct = ct)

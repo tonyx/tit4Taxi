@@ -15,8 +15,8 @@ type Ledger =
     {
         LedgerId: LedgerId
         Coops: CoopId * CoopId
-        EstimatedFlowFromCoop1TerritoryToCoop2Territory: float
-        EstimatedFlowFromCoop2TerritoryToCoop1Territory: float
+        Coop1MarketValue: float
+        Coop2MarketValue: float
         TokenSpentByCoop1: float
         TokenSpentByCoop2: float
         PerUserBalance: List<PerUserBalance>
@@ -26,8 +26,8 @@ type Ledger =
         {
             LedgerId = LedgerId.New()
             Coops = (coop1, coop2)
-            EstimatedFlowFromCoop1TerritoryToCoop2Territory = flow1
-            EstimatedFlowFromCoop2TerritoryToCoop1Territory = flow2
+            Coop1MarketValue = flow1
+            Coop2MarketValue = flow2
             TokenSpentByCoop1 = 0.0
             TokenSpentByCoop2 = 0.0
             PerUserBalance = []
@@ -85,18 +85,18 @@ type Ledger =
                 | Some token -> token.TokenSpentCoop2 |> Ok
                 | None -> Error "Balance not found"
 
-        member this.AdjustEtimatedFlowFromCoop1TerritoryToCoop2Territory (newFlow: float) =
-            { this with EstimatedFlowFromCoop1TerritoryToCoop2Territory = newFlow }
+        member this.SetMarket1Value (newFlow: float) =
+            { this with Coop1MarketValue = newFlow }
 
-        member this.AdjustEtimatedFlowFromCoop2TerritoryToCoop1Territory (newFlow: float) =
-            { this with EstimatedFlowFromCoop2TerritoryToCoop1Territory = newFlow }
+        member this.SetMarket2Value (newFlow: float) =
+            { this with Coop2MarketValue = newFlow }
                 
 
-        member this.ExchangeRateForCoop1ToLoadOnCoop2Territory () = 
-            this.EstimatedFlowFromCoop1TerritoryToCoop2Territory / this.EstimatedFlowFromCoop2TerritoryToCoop1Territory
+        member this.ExchangeRateAppliedToCoop1 () = 
+            this.Coop2MarketValue
 
-        member this.ExchangeRateForCoop2ToLoadOnCoop1Territory () = 
-            this.EstimatedFlowFromCoop2TerritoryToCoop1Territory / this.EstimatedFlowFromCoop1TerritoryToCoop2Territory
+        member this.ExchangeRateAppliedToCoop2 () = 
+            this.Coop1MarketValue
 
         member this.SpendToken (coop: CoopId, user: UserId) =
             result
@@ -104,21 +104,21 @@ type Ledger =
                     let! result =
                         match coop with
                             | coop1 when coop1 = (this.Coops |> fst) ->
-                                let balance = this.TokenSpentByCoop1 + this.ExchangeRateForCoop2ToLoadOnCoop1Territory()
+                                let balance = this.TokenSpentByCoop1 + this.ExchangeRateAppliedToCoop1()
                                 { this with TokenSpentByCoop1 = balance } |> Ok
 
                             | coop2 when coop2 = (this.Coops |> snd) ->
-                                let balance = this.TokenSpentByCoop2 + this.ExchangeRateForCoop1ToLoadOnCoop2Territory()
+                                let balance = this.TokenSpentByCoop2 + this.ExchangeRateAppliedToCoop2()
                                 { this with TokenSpentByCoop2 = balance } |> Ok
                             | _ -> Error "Invalid coop"
                     
                     let! resultAdjustingUserLedger =
                         match coop with
                             | coop1 when coop1 = (this.Coops |> fst) ->
-                                let tokenAmount = this.ExchangeRateForCoop2ToLoadOnCoop1Territory()
+                                let tokenAmount = this.ExchangeRateAppliedToCoop1()
                                 result.SpendTokenAmountPerUserCoop1 user tokenAmount
                             | coop2 when coop2 = (this.Coops |> snd) ->
-                                let tokenAmount = this.ExchangeRateForCoop1ToLoadOnCoop2Territory()
+                                let tokenAmount = this.ExchangeRateAppliedToCoop2()
                                 result.SpendTokenAmountPerUserCoop2 user tokenAmount
                             | _ -> Error "Invalid coop"
                     return resultAdjustingUserLedger

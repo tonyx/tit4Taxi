@@ -192,13 +192,13 @@
                                                     var isCoop1 = ledger.Coops.Item1.Value == userCoop.CoopId.Value;
                                                     var otherCoopId = isCoop1 ? ledger.Coops.Item2 : ledger.Coops.Item1;
                                                     var flowRatio = isCoop1 
-                                                        ? $"{ledger.EstimatedFlowFromCoop1TerritoryToCoop2Territory:N1} → {ledger.EstimatedFlowFromCoop2TerritoryToCoop1Territory:N1}"
-                                                        : $"{ledger.EstimatedFlowFromCoop2TerritoryToCoop1Territory:N1} → {ledger.EstimatedFlowFromCoop1TerritoryToCoop2Territory:N1}";
+                                                        ? $"{ledger.Coop1MarketValue:N1} → {ledger.Coop2MarketValue:N1}"
+                                                        : $"{ledger.Coop2MarketValue:N1} → {ledger.Coop1MarketValue:N1}";
                                                     
                                                     var spentTokens = isCoop1 ? ledger.TokenSpentByCoop1 : ledger.TokenSpentByCoop2;
                                                     var exchangeRate = isCoop1
-                                                        ? ledger.ExchangeRateForCoop1ToLoadOnCoop2Territory()
-                                                        : ledger.ExchangeRateForCoop2ToLoadOnCoop1Territory();
+                                                        ? ledger.ExchangeRateAppliedToCoop1()
+                                                        : ledger.ExchangeRateAppliedToCoop2();
 
                                                     <tr>
                                                         <td class="ps-4 fw-bold text-dark">
