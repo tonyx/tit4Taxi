@@ -100,25 +100,38 @@
 
             <!-- Huge Action Button -->
             <div class="my-4">
-                @if (isCloserToOpposite)
+                @if (pendingSpendCts != null)
                 {
-                    <button class="btn btn-success w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase pulse-animation" style="border-radius: 20px; min-height: 140px;" @onclick="ExecuteSpend">
-                        <i class="bi bi-check-circle-fill d-block fs-1 mb-2"></i>
-                        @Loc["SpendToken"]
+                    <button class="btn btn-warning w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase" style="border-radius: 20px; min-height: 140px;" @onclick="CancelSpend">
+                        <i class="bi bi-x-circle-fill d-block fs-1 mb-2"></i>
+                        @Loc["Undo"] (@countdownSeconds)
                     </button>
-                    <div class="text-success small mt-2 fw-semibold">
-                        <i class="bi bi-shield-check me-1"></i> @Loc["GeolocationVerifiedZone"]
+                    <div class="text-warning small mt-2 fw-semibold">
+                        <i class="bi bi-hourglass-split me-1"></i> Spending in @countdownSeconds seconds...
                     </div>
                 }
                 else
                 {
-                    <button class="btn btn-danger w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase" style="border-radius: 20px; min-height: 140px;" @onclick="ExecuteSpend">
-                        <i class="bi bi-exclamation-triangle-fill d-block fs-1 mb-2"></i>
-                        @Loc["SpendToken"]
-                    </button>
-                    <div class="text-danger small mt-2 fw-semibold">
-                        <i class="bi bi-shield-exclamation me-1"></i> @Loc["GeolocationWarningZone"]
-                    </div>
+                    @if (isCloserToOpposite)
+                    {
+                        <button class="btn btn-success w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase pulse-animation" style="border-radius: 20px; min-height: 140px;" @onclick="InitiateSpend">
+                            <i class="bi bi-check-circle-fill d-block fs-1 mb-2"></i>
+                            @Loc["SpendToken"]
+                        </button>
+                        <div class="text-success small mt-2 fw-semibold">
+                            <i class="bi bi-shield-check me-1"></i> @Loc["GeolocationVerifiedZone"]
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn btn-danger w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase" style="border-radius: 20px; min-height: 140px;" @onclick="InitiateSpend">
+                            <i class="bi bi-exclamation-triangle-fill d-block fs-1 mb-2"></i>
+                            @Loc["SpendToken"]
+                        </button>
+                        <div class="text-danger small mt-2 fw-semibold">
+                            <i class="bi bi-shield-exclamation me-1"></i> @Loc["GeolocationWarningZone"]
+                        </div>
+                    }
                 }
             </div>
         }
@@ -146,6 +159,48 @@
 </style>
 
 @code {
+    private System.Threading.CancellationTokenSource? pendingSpendCts;
+    private int countdownSeconds = 0;
+
+    private async Task InitiateSpend()
+    {
+        if (pendingSpendCts != null) return;
+
+        if (!isCloserToOpposite)
+        {
+            var warningText = Loc["GeolocationOverrideWarning"].Value;
+            var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);
+            if (!confirmOverride) return;
+        }
+
+        pendingSpendCts = new System.Threading.CancellationTokenSource();
+        countdownSeconds = 5;
+
+        try
+        {
+            while (countdownSeconds > 0)
+            {
+                await Task.Delay(1000, pendingSpendCts.Token);
+                countdownSeconds--;
+                StateHasChanged();
+            }
+            
+            pendingSpendCts = null;
+            await ExecuteSpend(skipWarning: true);
+        }
+        catch (TaskCanceledException)
+        {
+            pendingSpendCts = null;
+            successMessage = "Action undone successfully.";
+            StateHasChanged();
+        }
+    }
+
+    private void CancelSpend()
+    {
+        pendingSpendCts?.Cancel();
+    }
+
     private bool isLoading = true;
     private Coop? userCoop;
     private TitForTat.Domain.Ledger.Ledger? targetLedger;
@@ -307,14 +362,14 @@
         return R * c;
     }
 
-    private async Task ExecuteSpend()
+    private async Task ExecuteSpend(bool skipWarning = false)
     {
         errorMessage = null;
         successMessage = null;
 
         if (userContext == null || userCoop == null || targetLedger == null) return;
 
-        if (!isCloserToOpposite)
+        if (!skipWarning && !isCloserToOpposite)
         {
             var warningText = Loc["GeolocationOverrideWarning"].Value;
             var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);

@@ -677,4 +677,7 @@
   <data name="ErrorOccurredSpendingTokenPrefix" xml:space="preserve">
     <value>Si è verificato un errore durante la spesa del token: </value>
   </data>
+  <data name="Undo" xml:space="preserve">
+    <value>Annulla</value>
+  </data>
 </root>

@@ -213,11 +213,25 @@
                                                         <td class="text-center text-muted small">
                                                             @exchangeRate.ToString("N4")
                                                         </td>
-                                                        <td class="pe-4 text-end">
-                                                            <button class="btn btn-sm btn-outline-warning shadow-sm" style="border-radius: 8px; font-weight: 600;" @onclick="() => HandleSpendToken(ledger.LedgerId)">
-                                                                <i class="bi bi-plus-circle me-1"></i>@Loc["SpendToken"]
-                                                            </button>
-                                                        </td>
+                                                         <td class="pe-4 text-end">
+                                                             @if (pendingSpends.ContainsKey(ledger.LedgerId))
+                                                             {
+                                                                 <div class="d-flex justify-content-end align-items-center gap-2">
+                                                                     <span class="badge bg-warning text-dark px-2 py-1.5" style="border-radius: 8px;">
+                                                                         @countdowns[ledger.LedgerId]s
+                                                                     </span>
+                                                                     <button class="btn btn-sm btn-danger shadow-sm" style="border-radius: 8px; font-weight: 600;" @onclick="() => CancelSpend(ledger.LedgerId)">
+                                                                         <i class="bi bi-x-circle me-1"></i>@Loc["Undo"]
+                                                                     </button>
+                                                                 </div>
+                                                             }
+                                                             else
+                                                             {
+                                                                 <button class="btn btn-sm btn-outline-warning shadow-sm" style="border-radius: 8px; font-weight: 600;" @onclick="() => InitiateSpend(ledger.LedgerId)">
+                                                                     <i class="bi bi-plus-circle me-1"></i>@Loc["SpendToken"]
+                                                                 </button>
+                                                             }
+                                                         </td>
                                                     </tr>
                                                 }
                                             </tbody>
@@ -234,6 +248,47 @@
 </div>
 
 @code {
+    private Dictionary<LedgerId, System.Threading.CancellationTokenSource> pendingSpends = new();
+    private Dictionary<LedgerId, int> countdowns = new();
+
+    private async Task InitiateSpend(LedgerId ledgerId)
+    {
+        if (pendingSpends.ContainsKey(ledgerId)) return;
+
+        var cts = new System.Threading.CancellationTokenSource();
+        pendingSpends[ledgerId] = cts;
+        countdowns[ledgerId] = 5;
+
+        try
+        {
+            while (countdowns[ledgerId] > 0)
+            {
+                await Task.Delay(1000, cts.Token);
+                countdowns[ledgerId]--;
+                StateHasChanged();
+            }
+            
+            pendingSpends.Remove(ledgerId);
+            countdowns.Remove(ledgerId);
+            await HandleSpendToken(ledgerId);
+        }
+        catch (TaskCanceledException)
+        {
+            pendingSpends.Remove(ledgerId);
+            countdowns.Remove(ledgerId);
+            successMessage = "Action undone successfully.";
+            StateHasChanged();
+        }
+    }
+
+    private void CancelSpend(LedgerId ledgerId)
+    {
+        if (pendingSpends.TryGetValue(ledgerId, out var cts))
+        {
+            cts.Cancel();
+        }
+    }
+
     private bool isLoading = true;
     private Coop? userCoop;
     private List<Coop>? allCoops;
