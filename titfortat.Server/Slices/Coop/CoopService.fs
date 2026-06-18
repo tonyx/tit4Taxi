@@ -142,6 +142,12 @@ type CoopService
             let ct = defaultArg ct CancellationToken.None
             taskResult
                 {
+                    do!
+                        match context with
+                        | UserContext.Anonymous -> Error "not authorized"
+                        | UserContext.Authenticated (_, u) when u |> List.contains Role.Admin -> Ok ()     
+                        | _ -> Error "not authorized"    
+
                     let! (_, coop) = 
                         StateView.getAggregateFreshStateAsync<Coop,CoopEvent, string>
                             coopId.Value
@@ -197,6 +203,24 @@ type CoopService
                             (ct |> Some)
                     return result        
                 }
+        member this.GetCoopsThatHaveMeAsManager (context: UserContext, ?ct: CancellationToken) = 
+            let ct = defaultArg ct CancellationToken.None
+            taskResult
+                {
+                    let! userId =
+                        match context with 
+                        | UserContext.Anonymous -> Error "anonymous users are not allowed"
+                        | UserContext.Authenticated(userId, _) -> Ok userId
+
+                    let! result = 
+                        StateView.getAllFilteredAggregateStatesAsync<Coop,CoopEvent, string>
+                            (fun (c: Coop) -> c.Managers |> Seq.contains userId)
+                            eventStore
+                            (ct |> Some)
+                            |> TaskResult.map (fun list -> list |> List.map snd)
+
+                    return result        
+                }
 
         interface ICoopService with
             member this.CreateCoop (context: UserContext, name: string, ?ct: CancellationToken) =
@@ -205,6 +229,8 @@ type CoopService
                 this.GetAllCoops (context, ?ct = ct)
             member this.GetCoopsThatHaveCoordinatesDefined (context: UserContext, ?ct: CancellationToken) =
                 this.GetCoopsThatHaveCoordinatesDefined (context, ?ct = ct)
+            member this.GetCoopsThatHaveMeAsManager (context: UserContext, ?ct: CancellationToken) =
+                this.GetCoopsThatHaveMeAsManager (context, ?ct = ct)
             member this.PromoteMember (context: UserContext, coopId: CoopId, userId: UserId, ?ct: CancellationToken) =
                 this.PromoteMember (context, coopId, userId, ?ct = ct)
             member this.DemoteMember (context: UserContext, coopId: CoopId, userId: UserId, ?ct: CancellationToken) =

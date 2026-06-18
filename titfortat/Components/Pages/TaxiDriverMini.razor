@@ -114,7 +114,7 @@
                 }
                 else
                 {
-                    @if (isCloserToOpposite)
+                    @if (isCloserToOpposite && !HasDoubleSpendWarning())
                     {
                         <button class="btn btn-success w-100 shadow-lg py-4 fw-bold fs-3 text-uppercase pulse-animation" style="border-radius: 20px; min-height: 140px;" @onclick="InitiateSpend">
                             <i class="bi bi-check-circle-fill d-block fs-1 mb-2"></i>
@@ -131,7 +131,14 @@
                             @Loc["SpendToken"]
                         </button>
                         <div class="text-danger small mt-2 fw-semibold">
-                            <i class="bi bi-shield-exclamation me-1"></i> @Loc["GeolocationWarningZone"]
+                            @if (HasDoubleSpendWarning())
+                            {
+                                <span><i class="bi bi-shield-exclamation me-1"></i> Double Spend Warning: Haven't exited territory</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-shield-exclamation me-1"></i> @Loc["GeolocationWarningZone"]</span>
+                            }
                         </div>
                     }
                 }
@@ -174,11 +181,8 @@
 
     private List<CoopTrackingRecord> trackingRecords = new();
 
-    private async Task InitiateSpend()
+    private bool HasDoubleSpendWarning()
     {
-        if (pendingSpendCts != null) return;
-
-        // Perform the tokenSpendWithoutExiting double-spend check
         if (userLat.HasValue && userLng.HasValue && trackingRecords.Any())
         {
             CoopTrackingRecord? closestRecord = null;
@@ -192,13 +196,21 @@
                     closestRecord = record;
                 }
             }
+            return closestRecord != null && closestRecord.TokenSpendWithoutExiting;
+        }
+        return false;
+    }
 
-            if (closestRecord != null && closestRecord.TokenSpendWithoutExiting)
-            {
-                var warningText = "It looks like you are attempting to spend a token in a territory where you have already spent a token without exiting. Spending twice here could be due to an error. Are you sure you want to proceed?";
-                var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);
-                if (!confirmOverride) return;
-            }
+    private async Task InitiateSpend()
+    {
+        if (pendingSpendCts != null) return;
+
+        // Perform the tokenSpendWithoutExiting double-spend check
+        if (HasDoubleSpendWarning())
+        {
+            var warningText = "It looks like you are attempting to spend a token in a territory where you have already spent a token without exiting. Spending twice here could be due to an error. Are you sure you want to proceed?";
+            var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);
+            if (!confirmOverride) return;
         }
         else if (!isCloserToOpposite)
         {

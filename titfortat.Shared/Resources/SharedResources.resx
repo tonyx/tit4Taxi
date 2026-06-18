@@ -550,6 +550,15 @@
   <data name="FailedToDemoteUserPrefix" xml:space="preserve">
     <value>Failed to demote user: </value>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="SuccessfullyRemovedMemberFormat" xml:space="preserve">
+    <value>Successfully removed {0} from {1}.</value>
+  </data>
+  <data name="FailedToRemoveMemberPrefix" xml:space="preserve">
+    <value>Failed to remove member: </value>
+  </data>
   <data name="CooperativeLocationUpdated" xml:space="preserve">
     <value>Cooperative location updated successfully.</value>
   </data>

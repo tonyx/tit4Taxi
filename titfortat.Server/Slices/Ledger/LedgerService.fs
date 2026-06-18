@@ -42,7 +42,7 @@ type LedgerService (eventStore: IEventStore<string>) =
                     eventStore
                     (ct |> Some)
             
-            let spendTokenCmd = SpendTokenCommand (coopId, userId)
+            let spendTokenCmd = SpendToken (coopId, userId, DateTime.Now)
             let! result = 
                 runAggregateCommandMdAsync<Ledger, LedgerEvent, string>
                     ledgerId.Value

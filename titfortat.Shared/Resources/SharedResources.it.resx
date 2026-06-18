@@ -550,6 +550,15 @@
   <data name="FailedToDemoteUserPrefix" xml:space="preserve">
     <value>Impossibile retrocedere l'utente: </value>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Rimuovi</value>
+  </data>
+  <data name="SuccessfullyRemovedMemberFormat" xml:space="preserve">
+    <value>Rimosso con successo {0} da {1}.</value>
+  </data>
+  <data name="FailedToRemoveMemberPrefix" xml:space="preserve">
+    <value>Impossibile rimuovere il membro: </value>
+  </data>
   <data name="CooperativeLocationUpdated" xml:space="preserve">
     <value>Posizione della cooperativa aggiornata con successo.</value>
   </data>

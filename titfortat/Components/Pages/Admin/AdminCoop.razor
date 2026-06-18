@@ -200,6 +200,12 @@
                                                                 <i class="bi bi-shield-fill me-1"></i>@Loc["Promote"]
                                                             </button>
                                                         }
+                                                        @if (isAdmin)
+                                                        {
+                                                            <button class="btn btn-sm btn-outline-danger px-3 shadow-sm ms-1" style="border-radius: 8px;" @onclick="() => RemoveUser(user)">
+                                                                <i class="bi bi-person-x-fill me-1"></i>@Loc["Remove"]
+                                                            </button>
+                                                        }
                                                     </td>
                                                 </tr>
                                             }
@@ -275,6 +281,7 @@
     private List<User>? availableUsers;
     private bool isAuthorized = false;
     private bool isLoading = true;
+    private bool isAdmin = false;
     private string? errorMessage;
     private string? successMessage;
     private UserContext? userContext;
@@ -338,7 +345,7 @@
             }
 
             // Check authorization
-            var isAdmin = authState.User.IsInRole("ADMIN");
+            isAdmin = authState.User.IsInRole("ADMIN");
             
             UserId? currentUserId = null;
             if (userContext is UserContext.Authenticated authenticated)
@@ -451,6 +458,25 @@
         else
         {
             errorMessage = $"{Loc["FailedToDemoteUserPrefix"]}{result.ErrorValue}";
+        }
+    }
+
+    private async Task RemoveUser(User user)
+    {
+        if (userContext == null || coop == null) return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        var result = await CoopService.RemoveMember(userContext, coop.CoopId, user.UserId, CancellationToken.None);
+        if (result.IsOk)
+        {
+            successMessage = string.Format(Loc["SuccessfullyRemovedMemberFormat"].Value, user.AppUserInfo.UserName, coop.Name);
+            await LoadData();
+        }
+        else
+        {
+            errorMessage = $"{Loc["FailedToRemoveMemberPrefix"]}{result.ErrorValue}";
         }
     }
 

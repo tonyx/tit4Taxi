@@ -7,6 +7,7 @@ open TitForTat.Domain.Ledger
 
 type LedgerCommand = 
     | SpendTokenCommand of CoopId * UserId
+    | SpendToken of CoopId * UserId * DateTime
     | SetMarket1Value of float
     | SetMarket2Value of float
     | Archive
@@ -17,6 +18,9 @@ type LedgerCommand =
             | SpendTokenCommand (coopId, userId) ->
                 ledger.SpendToken(coopId, userId)
                 |> Result.map (fun l -> (l, [TokenSpentEvent(coopId, userId)]))
+            | SpendToken (coopId, userId, timeStamp) ->
+                ledger.SpendToken(coopId, userId)
+                |> Result.map (fun l -> (l, [TokenSpent(coopId, userId, timeStamp)]))
             | SetMarket1Value newFlow ->
                 let updated = ledger.SetMarket1Value(newFlow)
                 (updated, [Market1ValueSet(newFlow)]) |> Ok

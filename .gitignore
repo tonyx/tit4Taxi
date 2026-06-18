@@ -69,3 +69,5 @@ appsettings.json
 .env
 .env.*
 !.env.example
+
+.fake

@@ -8,6 +8,7 @@ open System.Text.Json
 
 type LedgerEvent = 
     | TokenSpentEvent of CoopId * UserId
+    | TokenSpent of CoopId * UserId * DateTime
     | Market1ValueSet of float
     | Market2ValueSet of float
     | Archived 
@@ -16,6 +17,7 @@ type LedgerEvent =
         member this.Process ledger = 
             match this with
             | TokenSpentEvent (coopId, userId) -> ledger.SpendToken(coopId, userId)
+            | TokenSpent (coopId, userId, timeStamp) -> ledger.SpendToken(coopId, userId)
             | Market1ValueSet newFlow ->
                 ledger.SetMarket1Value(newFlow) |> Ok
             | Market2ValueSet newFlow ->

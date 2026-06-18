@@ -145,6 +145,21 @@
                                         </div>
                                     </div>
                                 }
+                                @if (managedCoops != null && managedCoops.Any())
+                                {
+                                    <div class="mt-auto pt-3 border-top">
+                                        <label class="text-secondary small fw-semibold mb-2 d-block">@Loc["CooperativeManagement"]</label>
+                                        <div class="d-flex flex-column gap-2">
+                                            @foreach (var coop in managedCoops)
+                                            {
+                                                <a href="/Admin/Coop/@coop.CoopId.Value" class="btn btn-sm btn-outline-warning w-100 text-start shadow-sm d-flex align-items-center justify-content-between" style="border-radius: 8px; font-weight: 600;">
+                                                    <span><i class="bi bi-gear-fill me-2"></i>@coop.Name</span>
+                                                    <i class="bi bi-chevron-right small"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -292,6 +307,7 @@
     private bool isLoading = true;
     private Coop? userCoop;
     private List<Coop>? allCoops;
+    private List<Coop> managedCoops = new();
     private List<TitForTat.Domain.Ledger.Ledger>? involvedLedgers;
     private string? selectedCoopIdString;
     private string? errorMessage;
@@ -336,6 +352,13 @@
             else
             {
                 errorMessage = Loc["FailedToLoadCooperativesPrefix"] + coopsResult.ErrorValue;
+            }
+
+            // Load cooperatives that I manage
+            var managedCoopsResult = await CoopService.GetCoopsThatHaveMeAsManager(userContext, CancellationToken.None);
+            if (managedCoopsResult.IsOk)
+            {
+                managedCoops = managedCoopsResult.ResultValue.ToList();
             }
 
             // Load ledgers if affiliated
