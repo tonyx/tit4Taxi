@@ -1,0 +1,34 @@
+@using System.Globalization
+@using Microsoft.AspNetCore.Localization
+@inject NavigationManager NavigationManager
+
+<div class="culture-selector">
+    <form action="/SetCulture" method="get" class="culture-form">
+        <input type="hidden" name="redirectUri" value="@RedirectUri" />
+        <span class="culture-globe">🌐</span>
+        <select name="culture" onchange="this.form.submit()" class="culture-select">
+            @foreach (var c in TitForTat.Shared.Localization.SupportedCultures)
+            {
+                <option value="@c" selected="@(c == CurrentCulture.TwoLetterISOLanguageName || c == CurrentCulture.Name)">
+                    @GetLanguageName(c)
+                </option>
+            }
+        </select>
+    </form>
+</div>
+
+@code {
+    private CultureInfo CurrentCulture => CultureInfo.CurrentCulture;
+
+    private string RedirectUri => new Uri(NavigationManager.Uri).PathAndQuery;
+
+    private string GetLanguageName(string code)
+    {
+        return code.ToLower() switch
+        {
+            "en" => "English",
+            "it" => "Italiano",
+            _ => new CultureInfo(code).DisplayName
+        };
+    }
+}

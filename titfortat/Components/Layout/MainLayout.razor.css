@@ -96,3 +96,26 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.culture-form {
+    display: flex;
+    align-items: center;
+}
+.culture-globe {
+    font-size: 1.1rem;
+    margin-left: 1rem;
+}
+.culture-select {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.875rem;
+    cursor: pointer;
+    outline: none;
+    margin-left: 0.35rem;
+}
+.culture-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}

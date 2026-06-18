@@ -15,14 +15,14 @@
 @implements IDisposable
 @rendermode InteractiveServer
 
-<PageTitle>Cooperative Details</PageTitle>
+<PageTitle>@Loc["CooperativeDetails"]</PageTitle>
 
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-10 offset-lg-1">
             <div class="mb-4">
                 <a href="/Admin/Coops" class="btn btn-outline-secondary btn-sm shadow-sm" style="border-radius: 8px;">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Cooperatives
+                    <i class="bi bi-arrow-left me-2"></i>@Loc["BackToCooperatives"]
                 </a>
             </div>
 
@@ -30,9 +30,9 @@
             {
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                        <span class="visually-hidden">@Loc["Loading"]</span>
                     </div>
-                    <p class="mt-2 text-muted">Retrieving cooperative details...</p>
+                    <p class="mt-2 text-muted">@Loc["RetrievingCooperativeDetails"]</p>
                 </div>
             }
             else if (!isAuthorized)
@@ -41,8 +41,8 @@
                     <div class="text-danger mb-3">
                         <i class="bi bi-shield-lock-fill" style="font-size: 4rem;"></i>
                     </div>
-                    <h3 class="fw-bold text-dark">Access Denied</h3>
-                    <p class="text-muted">You do not have permission to access this cooperative's management page. Only administrators and cooperative managers are permitted.</p>
+                    <h3 class="fw-bold text-dark">@Loc["AccessDenied"]</h3>
+                    <p class="text-muted">@Loc["AccessDeniedDescription"]</p>
                 </div>
             }
             else if (coop == null)
@@ -51,8 +51,8 @@
                     <div class="text-warning mb-3">
                         <i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem;"></i>
                     </div>
-                    <h3 class="fw-bold text-dark">Cooperative Not Found</h3>
-                    <p class="text-muted">The requested cooperative does not exist or has been removed.</p>
+                    <h3 class="fw-bold text-dark">@Loc["CooperativeNotFound"]</h3>
+                    <p class="text-muted">@Loc["CooperativeNotFoundDescription"]</p>
                 </div>
             }
             else
@@ -65,7 +65,7 @@
                             </div>
                             <div>
                                 <h3 class="mb-0 fw-bold">@coop.Name</h3>
-                                <p class="mb-0 text-white-50 small">Cooperative ID: <span class="font-monospace text-white">@coop.CoopId.Value</span></p>
+                                <p class="mb-0 text-white-50 small">@Loc["CoopId"]: <span class="font-monospace text-white">@coop.CoopId.Value</span></p>
                             </div>
                         </div>
                     </div>
@@ -92,24 +92,24 @@
                         <div class="card border-0 shadow-sm mb-5" style="border-radius: 12px; background: #f8f9fa;">
                             <div class="card-body p-4">
                                 <h4 class="fw-bold text-dark fs-5 mb-3">
-                                    <i class="bi bi-geo-alt-fill text-danger me-2"></i>Cooperative Center Location
+                                    <i class="bi bi-geo-alt-fill text-danger me-2"></i>@Loc["CooperativeCenterLocation"]
                                 </h4>
                                 <p class="text-muted small">
-                                    Set the central coordinates for this cooperative. You can use the map to click or drag the marker, or retrieve your current browser location.
+                                    @Loc["CooperativeCenterLocationDescription"]
                                 </p>
                                 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-5">
-                                        <label class="form-label fw-semibold text-secondary small">Latitude</label>
-                                        <input type="number" step="any" class="form-control" placeholder="Not set" @bind="latitude" style="border-radius: 8px;" />
+                                        <label class="form-label fw-semibold text-secondary small">@Loc["Latitude"]</label>
+                                        <input type="number" step="any" class="form-control" placeholder="@Loc["NotSetPlaceholder"]" @bind="latitude" style="border-radius: 8px;" />
                                     </div>
                                     <div class="col-md-5">
-                                        <label class="form-label fw-semibold text-secondary small">Longitude</label>
-                                        <input type="number" step="any" class="form-control" placeholder="Not set" @bind="longitude" style="border-radius: 8px;" />
+                                        <label class="form-label fw-semibold text-secondary small">@Loc["Longitude"]</label>
+                                        <input type="number" step="any" class="form-control" placeholder="@Loc["NotSetPlaceholder"]" @bind="longitude" style="border-radius: 8px;" />
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">
                                         <button class="btn btn-outline-primary w-100 shadow-sm" style="border-radius: 8px; height: 38px;" @onclick="LocateUser">
-                                            <i class="bi bi-cursor-fill me-1"></i>Locate
+                                            <i class="bi bi-cursor-fill me-1"></i>@Loc["Locate"]
                                         </button>
                                     </div>
                                 </div>
@@ -123,11 +123,11 @@
                                         @if (isSavingLocation)
                                         {
                                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                            <span>Saving...</span>
+                                            <span>@Loc["Saving"]</span>
                                         }
                                         else
                                         {
-                                            <i class="bi bi-save2-fill me-1"></i><span>Save Location</span>
+                                            <i class="bi bi-save2-fill me-1"></i><span>@Loc["SaveLocation"]</span>
                                         }
                                     </button>
                                 </div>
@@ -137,15 +137,15 @@
                         <!-- Coop Members Section -->
                         <div class="mb-5">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="fw-bold text-dark fs-5 mb-0">Cooperative Members & Managers</h4>
-                                <span class="badge bg-primary rounded-pill px-3 py-2">@(coopUsers?.Count ?? 0) Total</span>
+                                <h4 class="fw-bold text-dark fs-5 mb-0">@Loc["CooperativeMembersAndManagers"]</h4>
+                                <span class="badge bg-primary rounded-pill px-3 py-2">@string.Format(Loc["TotalCountFormat"].Value, coopUsers?.Count ?? 0)</span>
                             </div>
 
                             @if (coopUsers == null)
                             {
                                 <div class="text-center py-4">
                                     <div class="spinner-border text-primary spinner-border-sm" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                                        <span class="visually-hidden">@Loc["Loading"]</span>
                                     </div>
                                 </div>
                             }
@@ -153,7 +153,7 @@
                             {
                                 <div class="text-center py-4 border border-dashed rounded-4 bg-light bg-opacity-50">
                                     <i class="bi bi-person-x fs-2 text-muted"></i>
-                                    <p class="mt-2 mb-0 text-secondary fw-semibold">No members in this cooperative yet.</p>
+                                    <p class="mt-2 mb-0 text-secondary fw-semibold">@Loc["NoMembersInCooperativeYet"]</p>
                                 </div>
                             }
                             else
@@ -162,11 +162,11 @@
                                     <table class="table table-hover align-middle mb-0 bg-white">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th class="ps-4">User ID</th>
-                                                <th>Username</th>
-                                                <th>Email</th>
-                                                <th>Coop Role</th>
-                                                <th class="pe-4 text-end">Actions</th>
+                                                <th class="ps-4">@Loc["UserId"]</th>
+                                                <th>@Loc["Username"]</th>
+                                                <th>@Loc["Email"]</th>
+                                                <th>@Loc["CoopRole"]</th>
+                                                <th class="pe-4 text-end">@Loc["Actions"]</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -180,24 +180,24 @@
                                                     <td>
                                                         @if (isUserManager)
                                                         {
-                                                            <span class="badge bg-danger rounded-pill px-3 py-1.5"><i class="bi bi-shield-fill me-1"></i>Manager</span>
+                                                            <span class="badge bg-danger rounded-pill px-3 py-1.5"><i class="bi bi-shield-fill me-1"></i>@Loc["Manager"]</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="badge bg-info text-dark rounded-pill px-3 py-1.5">Member</span>
+                                                            <span class="badge bg-info text-dark rounded-pill px-3 py-1.5">@Loc["Member"]</span>
                                                         }
                                                     </td>
                                                     <td class="pe-4 text-end">
                                                         @if (isUserManager)
                                                         {
                                                             <button class="btn btn-sm btn-outline-warning px-3 shadow-sm" style="border-radius: 8px;" @onclick="() => DemoteUser(user)">
-                                                                <i class="bi bi-shield-slash-fill me-1"></i>Demote
+                                                                <i class="bi bi-shield-slash-fill me-1"></i>@Loc["Demote"]
                                                             </button>
                                                         }
                                                         else
                                                         {
                                                             <button class="btn btn-sm btn-outline-success px-3 shadow-sm" style="border-radius: 8px;" @onclick="() => PromoteUser(user)">
-                                                                <i class="bi bi-shield-fill me-1"></i>Promote
+                                                                <i class="bi bi-shield-fill me-1"></i>@Loc["Promote"]
                                                             </button>
                                                         }
                                                     </td>
@@ -211,12 +211,12 @@
 
                         <!-- Unaffiliated Users Section -->
                         <div>
-                            <h4 class="mb-3 fw-bold text-dark fs-5">Add Members (Unaffiliated Users)</h4>
+                            <h4 class="mb-3 fw-bold text-dark fs-5">@Loc["AddMembersUnaffiliated"]</h4>
                             @if (availableUsers == null)
                             {
                                 <div class="text-center py-4">
                                     <div class="spinner-border text-primary spinner-border-sm" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                                        <span class="visually-hidden">@Loc["Loading"]</span>
                                     </div>
                                 </div>
                             }
@@ -224,7 +224,7 @@
                             {
                                 <div class="text-center py-4 border border-dashed rounded-4 bg-light bg-opacity-50">
                                     <i class="bi bi-check-all fs-2 text-success"></i>
-                                    <p class="mt-2 mb-0 text-secondary fw-semibold">All registered users are already assigned to cooperatives.</p>
+                                    <p class="mt-2 mb-0 text-secondary fw-semibold">@Loc["AllUsersAssignedToCoops"]</p>
                                 </div>
                             }
                             else
@@ -233,10 +233,10 @@
                                     <table class="table table-hover align-middle mb-0 bg-white">
                                         <thead class="table-secondary">
                                             <tr>
-                                                <th class="ps-4">User ID</th>
-                                                <th>Username</th>
-                                                <th>Email</th>
-                                                <th class="pe-4 text-end">Action</th>
+                                                <th class="ps-4">@Loc["UserId"]</th>
+                                                <th>@Loc["Username"]</th>
+                                                <th>@Loc["Email"]</th>
+                                                <th class="pe-4 text-end">@Loc["Action"]</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -248,7 +248,7 @@
                                                     <td>@user.AppUserInfo.Email</td>
                                                     <td class="pe-4 text-end">
                                                         <button class="btn btn-sm btn-success px-3 shadow-sm" style="border-radius: 8px;" @onclick="() => AddUserToCoop(user)">
-                                                            <i class="bi bi-person-plus-fill me-1"></i>Add to Coop
+                                                            <i class="bi bi-person-plus-fill me-1"></i>@Loc["AddtoCoop"]
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -308,7 +308,7 @@
 
             if (!Guid.TryParse(CoopIdString, out var coopGuid))
             {
-                errorMessage = "Invalid Cooperative ID format.";
+                errorMessage = Loc["InvalidCoopIdFormat"];
                 isLoading = false;
                 return;
             }
@@ -407,12 +407,12 @@
         var result = await CoopService.AddMember(userContext, coop.CoopId, user.UserId, CancellationToken.None);
         if (result.IsOk)
         {
-            successMessage = $"Successfully added {user.AppUserInfo.UserName} to {coop.Name}.";
+            successMessage = string.Format(Loc["SuccessfullyAddedUserToCoopFormat"].Value, user.AppUserInfo.UserName, coop.Name);
             await LoadData();
         }
         else
         {
-            errorMessage = $"Failed to add member: {result.ErrorValue}";
+            errorMessage = $"{Loc["FailedToAddMemberPrefix"]}{result.ErrorValue}";
         }
     }
 
@@ -426,12 +426,12 @@
         var result = await CoopService.PromoteMember(userContext, coop.CoopId, user.UserId, CancellationToken.None);
         if (result.IsOk)
         {
-            successMessage = $"Successfully promoted {user.AppUserInfo.UserName} to Manager.";
+            successMessage = string.Format(Loc["SuccessfullyPromotedToManagerFormat"].Value, user.AppUserInfo.UserName);
             await LoadData();
         }
         else
         {
-            errorMessage = $"Failed to promote user: {result.ErrorValue}";
+            errorMessage = $"{Loc["FailedToPromoteUserPrefix"]}{result.ErrorValue}";
         }
     }
 
@@ -445,12 +445,12 @@
         var result = await CoopService.DemoteMember(userContext, coop.CoopId, user.UserId, CancellationToken.None);
         if (result.IsOk)
         {
-            successMessage = $"Successfully demoted {user.AppUserInfo.UserName} to Member.";
+            successMessage = string.Format(Loc["SuccessfullyDemotedToMemberFormat"].Value, user.AppUserInfo.UserName);
             await LoadData();
         }
         else
         {
-            errorMessage = $"Failed to demote user: {result.ErrorValue}";
+            errorMessage = $"{Loc["FailedToDemoteUserPrefix"]}{result.ErrorValue}";
         }
     }
 
@@ -522,7 +522,7 @@
             var result = await CoopService.SetCenterCoordinate(userContext, coop.CoopId, coord, CancellationToken.None);
             if (result.IsOk)
             {
-                successMessage = "Cooperative location updated successfully.";
+                successMessage = Loc["CooperativeLocationUpdated"];
                 // Refresh/reload the coop state
                 var coopResult = await CoopService.GetCoop(userContext, coop.CoopId, CancellationToken.None);
                 if (coopResult.IsOk)
@@ -532,12 +532,12 @@
             }
             else
             {
-                errorMessage = $"Failed to save location: {result.ErrorValue}";
+                errorMessage = $"{Loc["FailedToSaveLocationPrefix"]}{result.ErrorValue}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred while saving: {ex.Message}";
+            errorMessage = $"{Loc["ErrorOccurredSavingPrefix"]}{ex.Message}";
         }
         finally
         {

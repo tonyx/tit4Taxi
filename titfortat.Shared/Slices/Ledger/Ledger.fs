@@ -11,10 +11,32 @@ type PerUserBalance =
         TokenSpentCoop2: float
     }
 
-type Ledger =
+type Ledger001 =
     {
         LedgerId: LedgerId
         Coops: CoopId * CoopId
+        Coop1MarketValue: float
+        Coop2MarketValue: float
+        TokenSpentByCoop1: float
+        TokenSpentByCoop2: float
+        PerUserBalance: List<PerUserBalance>
+    }
+    member this.Upcast(): Ledger =
+        {
+            LedgerId = this.LedgerId
+            Coops = this.Coops
+            Coop1MarketValue = this.Coop1MarketValue
+            Coop2MarketValue = this.Coop2MarketValue
+            TokenSpentByCoop1 = this.TokenSpentByCoop1
+            TokenSpentByCoop2 = this.TokenSpentByCoop2
+            PerUserBalance = this.PerUserBalance
+            LedgerStatus = LedgerStatus.Active
+        }
+and Ledger =
+    {
+        LedgerId: LedgerId
+        Coops: CoopId * CoopId
+        LedgerStatus: LedgerStatus
         Coop1MarketValue: float
         Coop2MarketValue: float
         TokenSpentByCoop1: float
@@ -31,6 +53,7 @@ type Ledger =
             TokenSpentByCoop1 = 0.0
             TokenSpentByCoop2 = 0.0
             PerUserBalance = []
+            LedgerStatus = LedgerStatus.Active
         }
 
         member private this.SpendTokenAmountPerUserCoop1 (userId: UserId) (tokenAmount: float) =
@@ -85,6 +108,11 @@ type Ledger =
                 | Some token -> token.TokenSpentCoop2 |> Ok
                 | None -> Error "Balance not found"
 
+        member this.Archive () = 
+            match this.LedgerStatus with
+                | LedgerStatus.Active -> { this with LedgerStatus = LedgerStatus.Archived } |> Ok
+                | _ -> Error "Ledger is not active"
+
         member this.SetMarket1Value (newFlow: float) =
             { this with Coop1MarketValue = newFlow }
 
@@ -135,4 +163,8 @@ type Ledger =
             try
                 (data, jsonOptions) |> JsonSerializer.Deserialize<Ledger> |> Ok
             with | ex -> 
-                Error ex.Message
+                try
+                    let result =
+                        (data, jsonOptions) |> JsonSerializer.Deserialize<Ledger001> 
+                    result.Upcast() |> Ok
+                with | ex2 -> Error ex2.Message

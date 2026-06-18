@@ -28,6 +28,10 @@ type LedgerId =
             match this with
             | LedgerId id -> id
 
+type LedgerStatus =
+    | Active
+    | Archived
+
 type UserId =
     | UserId of Id: Guid
     with 

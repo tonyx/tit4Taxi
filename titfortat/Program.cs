@@ -12,10 +12,14 @@ using TitForTat.Shared.Services;
 using Mailjet.Client;
 using TitForTat.Server.MailQueueNotification;
 using TitForTat.Shared.Infrastructure.Services;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddLocalization();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents()
@@ -85,6 +89,13 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+var supportedCultures = new[] { "en", "it" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+app.UseRequestLocalization(localizationOptions);
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
@@ -97,6 +108,24 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+app.MapGet("/SetCulture", (string culture, string redirectUri, HttpContext httpContext) =>
+{
+    if (culture != null)
+    {
+        httpContext.Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+        );
+    }
+    
+    var safeRedirect = string.IsNullOrEmpty(redirectUri) || !Uri.IsWellFormedUriString(redirectUri, UriKind.Relative) 
+        ? "/" 
+        : redirectUri;
+
+    return Results.LocalRedirect(safeRedirect);
+});
 
 var copyUsersAtLogon = builder.Configuration.GetValue<bool>("CopyUsersAtLogon", false);
 if (copyUsersAtLogon)

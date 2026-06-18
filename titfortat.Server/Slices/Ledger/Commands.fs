@@ -9,6 +9,7 @@ type LedgerCommand =
     | SpendTokenCommand of CoopId * UserId
     | SetMarket1Value of float
     | SetMarket2Value of float
+    | Archive
 
     interface AggregateCommand<Ledger, LedgerEvent> with
         member this.Execute ledger = 
@@ -22,5 +23,8 @@ type LedgerCommand =
             | SetMarket2Value newFlow ->
                 let updated = ledger.SetMarket2Value(newFlow)
                 (updated, [Market2ValueSet(newFlow)]) |> Ok
+            | Archive -> 
+                ledger.Archive()
+                |> Result.map (fun l -> (l, [LedgerEvent.Archived]))
                 
         member this.Undoer = None

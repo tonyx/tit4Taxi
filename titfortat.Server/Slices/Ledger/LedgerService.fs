@@ -65,14 +65,17 @@ type LedgerService (eventStore: IEventStore<string>) =
             return ledger
         }
 
-    member this.GetAllLedgers (context: UserContext, ?ct: CancellationToken) =
+    member this.GetActiveLedgers (context: UserContext, ?ct: CancellationToken) =
         let ct = defaultArg ct CancellationToken.None
         taskResult {
             let! result =
-                StateView.getAllAggregateStatesAsync<Ledger, LedgerEvent, string>
+                StateView.getAllFilteredAggregateStatesAsync<Ledger, LedgerEvent, string>
+                    (fun (l: Ledger) -> l.LedgerStatus = LedgerStatus.Active)
                     eventStore
                     (ct |> Some)
-            return result |>> snd
+                    |> TaskResult.map (fun list -> list |> List.map snd)
+                    
+            return result
         }
 
     member this.SetMarket1Value (context: UserContext, ledgerId: LedgerId, flow1: float, ?ct: CancellationToken) =
@@ -104,6 +107,20 @@ type LedgerService (eventStore: IEventStore<string>) =
                     (ct |> Some)
             return result
         }
+    member this.ArchiveLedger (context: UserContext, ledgerId: LedgerId, ?ct: CancellationToken) = 
+        let ct = defaultArg ct CancellationToken.None
+        taskResult {
+            let cmd = Archive
+            let! result = 
+                runAggregateCommandMdAsync<Ledger, LedgerEvent, string>
+                    ledgerId.Value
+                    eventStore
+                    messageSenders
+                    ""
+                    cmd
+                    (ct |> Some)
+            return result
+        }
 
     interface ILedgerService with
         member this.CreateLedger (context, coop1, coop2, flow1, flow2, ?ct) =
@@ -112,9 +129,11 @@ type LedgerService (eventStore: IEventStore<string>) =
             this.SpendToken (context, ledgerId, coopId, userId, ?ct = ct)
         member this.GetLedger (context, ledgerId, ?ct) =
             this.GetLedger (context, ledgerId, ?ct = ct)
-        member this.GetAllLedgers (context, ?ct) =
-            this.GetAllLedgers (context, ?ct = ct)
+        member this.GetActiveLedgers (context, ?ct) =
+            this.GetActiveLedgers (context, ?ct = ct)
         member this.SetMarket1Value (context, ledgerId, flow1, ?ct) =
             this.SetMarket1Value (context, ledgerId, flow1, ?ct = ct)
         member this.SetMarket2Value (context, ledgerId, flow2, ?ct) =
             this.SetMarket2Value (context, ledgerId, flow2, ?ct = ct)
+        member this.ArchiveLedger (context, ledgerId, ?ct) =
+            this.ArchiveLedger (context, ledgerId, ?ct = ct)

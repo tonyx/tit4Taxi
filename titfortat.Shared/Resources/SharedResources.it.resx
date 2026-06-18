@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="0" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Welcome" xml:space="preserve">
+    <value>Benvenuto in Tit For Tat</value>
+  </data>
+  <data name="ManageCoops" xml:space="preserve">
+    <value>Gestisci Cooperative</value>
+  </data>
+  <data name="CooperativeManagement" xml:space="preserve">
+    <value>Gestione Cooperative</value>
+  </data>
+  <data name="ViewAndCreateTaxiCooperatives" xml:space="preserve">
+    <value>Visualizza e crea cooperative di taxi</value>
+  </data>
+  <data name="CreateNewCooperative" xml:space="preserve">
+    <value>Crea Nuova Cooperativa</value>
+  </data>
+  <data name="CooperativeName" xml:space="preserve">
+    <value>Nome Cooperativa</value>
+  </data>
+  <data name="CooperativeNamePlaceholder" xml:space="preserve">
+    <value>es. Consorzio Metro Cabs</value>
+  </data>
+  <data name="CreateCoop" xml:space="preserve">
+    <value>Crea Coop</value>
+  </data>
+  <data name="ExistingCooperatives" xml:space="preserve">
+    <value>Cooperative Esistenti</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Caricamento...</value>
+  </data>
+  <data name="RetrievingCooperativesList" xml:space="preserve">
+    <value>Recupero della lista delle cooperative...</value>
+  </data>
+  <data name="NoCooperativesRegistered" xml:space="preserve">
+    <value>Nessuna cooperativa registrata.</value>
+  </data>
+  <data name="UseFormToAddCooperative" xml:space="preserve">
+    <value>Usa il modulo sovrastante per aggiungere la prima cooperativa.</value>
+  </data>
+  <data name="CoopId" xml:space="preserve">
+    <value>ID Coop</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+  <data name="ManagersCount" xml:space="preserve">
+    <value>Conteggio Manager</value>
+  </data>
+  <data name="MembersCount" xml:space="preserve">
+    <value>Conteggio Membri</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Azioni</value>
+  </data>
+  <data name="Manage" xml:space="preserve">
+    <value>Gestisci</value>
+  </data>
+  <data name="FailedToLoadCooperativesPrefix" xml:space="preserve">
+    <value>Impossibile caricare le cooperative: </value>
+  </data>
+  <data name="UserNotAuthenticated" xml:space="preserve">
+    <value>Utente non autenticato.</value>
+  </data>
+  <data name="CooperativeNameEmpty" xml:space="preserve">
+    <value>Il nome della cooperativa non può essere vuoto.</value>
+  </data>
+  <data name="CooperativeNameExistsFormat" xml:space="preserve">
+    <value>Una cooperativa con il nome '{0}' esiste già.</value>
+  </data>
+  <data name="CooperativeCreatedFormat" xml:space="preserve">
+    <value>Cooperativa '{0}' creata con successo.</value>
+  </data>
+  <data name="FailedToCreateCooperativePrefix" xml:space="preserve">
+    <value>Impossibile creare la cooperativa: </value>
+  </data>
+  <data name="CooperativeNameRequired" xml:space="preserve">
+    <value>Il nome della cooperativa è obbligatorio.</value>
+  </data>
+  <data name="CooperativeNameMaxLength" xml:space="preserve">
+    <value>Il nome della cooperativa non può superare i 100 caratteri.</value>
+  </data>
+  <data name="HomeTitle" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="HelloWord" xml:space="preserve">
+    <value>Ciao, mondo!</value>
+  </data>
+  <data name="WelcomeToApp" xml:space="preserve">
+    <value>Benvenuto nella tua nuova applicazione.</value>
+  </data>
+  <data name="NotFoundTitle" xml:space="preserve">
+    <value>Non Trovato</value>
+  </data>
+  <data name="NotFoundDescription" xml:space="preserve">
+    <value>Spiacenti, il contenuto cercato non esiste.</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Errore</value>
+  </data>
+  <data name="ErrorHeader" xml:space="preserve">
+    <value>Errore.</value>
+  </data>
+  <data name="ErrorSubheader" xml:space="preserve">
+    <value>Si è verificato un errore durante l'elaborazione della richiesta.</value>
+  </data>
+  <data name="RequestIdLabel" xml:space="preserve">
+    <value>ID Richiesta:</value>
+  </data>
+  <data name="DevelopmentModeHeader" xml:space="preserve">
+    <value>Modalità Sviluppo</value>
+  </data>
+  <data name="DevelopmentModeDesc1" xml:space="preserve">
+    <value>Passare all'ambiente di {0} mostrerà informazioni più dettagliate sull'errore che si è verificato.</value>
+  </data>
+  <data name="DevelopmentModeDesc2" xml:space="preserve">
+    <value>{0} Può comportare la visualizzazione di informazioni riservate derivanti da eccezioni agli utenti finali. Per il debug locale, abilitare l'ambiente di {1} impostando la variabile d'ambiente {2} su {3} e riavviando l'applicazione.</value>
+  </data>
+  <data name="CounterTitle" xml:space="preserve">
+    <value>Contatore</value>
+  </data>
+  <data name="CurrentCountFormat" xml:space="preserve">
+    <value>Conteggio corrente: {0}</value>
+  </data>
+  <data name="ClickMe" xml:space="preserve">
+    <value>Cliccami</value>
+  </data>
+  <data name="AuthTitle" xml:space="preserve">
+    <value>Autorizzazione</value>
+  </data>
+  <data name="AuthenticatedHeader" xml:space="preserve">
+    <value>Sei autenticato</value>
+  </data>
+  <data name="HelloUserFormat" xml:space="preserve">
+    <value>Ciao {0}!</value>
+  </data>
+  <data name="WeatherTitle" xml:space="preserve">
+    <value>Meteo</value>
+  </data>
+  <data name="WeatherDescription" xml:space="preserve">
+    <value>Questo componente mostra la visualizzazione dei dati.</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="TempC" xml:space="preserve">
+    <value>Temp. (C)</value>
+  </data>
+  <data name="TempF" xml:space="preserve">
+    <value>Temp. (F)</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Riepilogo</value>
+  </data>
+  <data name="TempCelsiusAriaLabel" xml:space="preserve">
+    <value>Temperatura in Celsius</value>
+  </data>
+  <data name="TempFahrenheitAriaLabel" xml:space="preserve">
+    <value>Temperatura in Fahrenheit</value>
+  </data>
+  <data name="RegistrationPinCodesTitle" xml:space="preserve">
+    <value>Codici PIN di Registrazione</value>
+  </data>
+  <data name="GenerateCode" xml:space="preserve">
+    <value>Genera Codice</value>
+  </data>
+  <data name="NewPinGenerated" xml:space="preserve">
+    <value>Nuovo PIN Generato!</value>
+  </data>
+  <data name="PinValidityMessage" xml:space="preserve">
+    <value>Questo PIN è valido per esattamente 10 minuti e può essere utilizzato una sola volta.</value>
+  </data>
+  <data name="ActiveRegistrationPins" xml:space="preserve">
+    <value>PIN di Registrazione Attivi</value>
+  </data>
+  <data name="NoActivePinsMessage" xml:space="preserve">
+    <value>Nessun codice PIN attivo nel sistema. Il sistema di registrazione è attualmente disabilitato per i nuovi utenti.</value>
+  </data>
+  <data name="PinCode" xml:space="preserve">
+    <value>Codice PIN</value>
+  </data>
+  <data name="ExpiresAtUtc" xml:space="preserve">
+    <value>Scadenza (UTC)</value>
+  </data>
+  <data name="TimeRemaining" xml:space="preserve">
+    <value>Tempo Rimanente</value>
+  </data>
+  <data name="TimeRemainingFormat" xml:space="preserve">
+    <value>{0}m {1}s</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Scaduto</value>
+  </data>
+  <data name="ManageLedgers" xml:space="preserve">
+    <value>Gestisci Registri</value>
+  </data>
+  <data name="LedgerManagement" xml:space="preserve">
+    <value>Gestione Registro</value>
+  </data>
+  <data name="ViewAndManageCooperativeLedgersAndFlows" xml:space="preserve">
+    <value>Visualizza e gestisci i registri e i flussi delle cooperative</value>
+  </data>
+  <data name="CreateNewLedger" xml:space="preserve">
+    <value>Crea Nuovo Registro</value>
+  </data>
+  <data name="Cooperative1" xml:space="preserve">
+    <value>Cooperativa 1</value>
+  </data>
+  <data name="SelectCooperative1Option" xml:space="preserve">
+    <value>-- Seleziona Cooperativa 1 --</value>
+  </data>
+  <data name="Cooperative2" xml:space="preserve">
+    <value>Cooperativa 2</value>
+  </data>
+  <data name="SelectCooperative2Option" xml:space="preserve">
+    <value>-- Seleziona Cooperativa 2 --</value>
+  </data>
+  <data name="EstimatedValue" xml:space="preserve">
+    <value>Valore Stimato</value>
+  </data>
+  <data name="WhatIsThis" xml:space="preserve">
+    <value>Di cosa si tratta?</value>
+  </data>
+  <data name="UnderstandingEstimatedValue" xml:space="preserve">
+    <value>Capire il Valore Stimato</value>
+  </data>
+  <data name="EstimatedValueHelpText" xml:space="preserve">
+    <value>Il valore deve essere un numero che rappresenta il valore relativo attribuito al territorio della cooperativa. Ad esempio, se una cooperativa ha il doppio del valore di un'altra, la prima deve avere 2 e la seconda 1.</value>
+  </data>
+  <data name="CreateLedger" xml:space="preserve">
+    <value>Crea Registro</value>
+  </data>
+  <data name="ActiveLedgers" xml:space="preserve">
+    <value>Registri Attivi</value>
+  </data>
+  <data name="RetrievingData" xml:space="preserve">
+    <value>Recupero dati...</value>
+  </data>
+  <data name="NoLedgersCreatedYet" xml:space="preserve">
+    <value>Nessun registro ancora creato.</value>
+  </data>
+  <data name="SelectCoopsToCreateLedger" xml:space="preserve">
+    <value>Seleziona le cooperative e imposta i flussi per creare un registro.</value>
+  </data>
+  <data name="LedgerId" xml:space="preserve">
+    <value>ID Registro</value>
+  </data>
+  <data name="Flow1To2" xml:space="preserve">
+    <value>Flusso (1 → 2)</value>
+  </data>
+  <data name="Flow2To1" xml:space="preserve">
+    <value>Flusso (2 → 1)</value>
+  </data>
+  <data name="ExchangeRate1To2" xml:space="preserve">
+    <value>Tasso di Cambio 1 → 2</value>
+  </data>
+  <data name="ExchangeRate2To1" xml:space="preserve">
+    <value>Tasso di Cambio 2 → 1</value>
+  </data>
+  <data name="TokensSpentCoop1" xml:space="preserve">
+    <value>Token Spesi (Coop 1)</value>
+  </data>
+  <data name="TokensSpentCoop2" xml:space="preserve">
+    <value>Token Spesi (Coop 2)</value>
+  </data>
+  <data name="FailedToLoadLedgersPrefix" xml:space="preserve">
+    <value>Impossibile caricare i registri: </value>
+  </data>
+  <data name="PleaseSelectBothCooperatives" xml:space="preserve">
+    <value>Selezionare entrambe le cooperative.</value>
+  </data>
+  <data name="CooperativesMustBeDifferent" xml:space="preserve">
+    <value>La Cooperativa 1 e la Cooperativa 2 devono essere diverse.</value>
+  </data>
+  <data name="InvalidCooperativeSelected" xml:space="preserve">
+    <value>Cooperativa selezionata non valida.</value>
+  </data>
+  <data name="FlowEstimatesPositive" xml:space="preserve">
+    <value>Le stime del flusso devono essere valori positivi superiori a zero.</value>
+  </data>
+  <data name="LedgerAlreadyExists" xml:space="preserve">
+    <value>Esiste già un registro tra queste due cooperative.</value>
+  </data>
+  <data name="LedgerCreatedSuccessfully" xml:space="preserve">
+    <value>Registro creato con successo.</value>
+  </data>
+  <data name="FailedToCreateLedgerPrefix" xml:space="preserve">
+    <value>Impossibile creare il registro: </value>
+  </data>
+  <data name="Cooperative1Required" xml:space="preserve">
+    <value>La Cooperativa 1 è obbligatoria.</value>
+  </data>
+  <data name="Cooperative2Required" xml:space="preserve">
+    <value>La Cooperativa 2 è obbligatoria.</value>
+  </data>
+  <data name="ValueRequired" xml:space="preserve">
+    <value>Il valore è obbligatorio.</value>
+  </data>
+  <data name="ValueMustBeGreaterThanZero" xml:space="preserve">
+    <value>Il valore deve essere maggiore di 0.</value>
+  </data>
+  <data name="TaxiDriverPortal" xml:space="preserve">
+    <value>Portale Tassista</value>
+  </data>
+  <data name="TaxiDriverPortalSubtitle" xml:space="preserve">
+    <value>Gestisci la tua iscrizione alla cooperativa e visualizza i registri attivi</value>
+  </data>
+  <data name="LoadingDriverDashboard" xml:space="preserve">
+    <value>Caricamento cruscotto tassista...</value>
+  </data>
+  <data name="NoCooperativeAssigned" xml:space="preserve">
+    <value>Nessuna Cooperativa Assegnata</value>
+  </data>
+  <data name="NoCooperativeAssignedDescription" xml:space="preserve">
+    <value>Non sei attualmente affiliato ad alcuna cooperativa di taxi. Per visualizzare i registri attivi e registrare le azioni del tassista, seleziona la cooperativa a cui appartieni qui sotto.</value>
+  </data>
+  <data name="SelectYourCooperativeOption" xml:space="preserve">
+    <value>-- Seleziona la tua Cooperativa --</value>
+  </data>
+  <data name="JoinCooperativeButton" xml:space="preserve">
+    <value>Entra nella Cooperativa</value>
+  </data>
+  <data name="CooperativeInfoTitle" xml:space="preserve">
+    <value>Informazioni Cooperativa</value>
+  </data>
+  <data name="YourStatus" xml:space="preserve">
+    <value>Tuo Stato</value>
+  </data>
+  <data name="Manager" xml:space="preserve">
+    <value>Manager</value>
+  </data>
+  <data name="Member" xml:space="preserve">
+    <value>Membro</value>
+  </data>
+  <data name="TotalMembers" xml:space="preserve">
+    <value>Membri Totali</value>
+  </data>
+  <data name="Coordinates" xml:space="preserve">
+    <value>Coordinate</value>
+  </data>
+  <data name="LatLngFormat" xml:space="preserve">
+    <value>Lat: {0}, Lng: {1}</value>
+  </data>
+  <data name="InvolvedActiveLedgers" xml:space="preserve">
+    <value>Registri Attivi Coinvolti</value>
+  </data>
+  <data name="NoActiveLedgersForCooperative" xml:space="preserve">
+    <value>Nessun registro attivo per la tua cooperativa.</value>
+  </data>
+  <data name="AdminMustSetUpLedgers" xml:space="preserve">
+    <value>Un amministratore deve impostare i registri che coinvolgono la tua cooperativa.</value>
+  </data>
+  <data name="OtherCooperative" xml:space="preserve">
+    <value>Altra Cooperativa</value>
+  </data>
+  <data name="FlowRatio" xml:space="preserve">
+    <value>Rapporto di Flusso</value>
+  </data>
+  <data name="YourSpentTokens" xml:space="preserve">
+    <value>Tuoi Token Spesi</value>
+  </data>
+  <data name="ExchangeRate" xml:space="preserve">
+    <value>Tasso di Cambio</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>Azione</value>
+  </data>
+  <data name="SpendToken" xml:space="preserve">
+    <value>Spendi Token</value>
+  </data>
+  <data name="MustBeLoggedIn" xml:space="preserve">
+    <value>Devi effettuare l'accesso per visualizzare questa pagina.</value>
+  </data>
+  <data name="ErrorLoadingDashboardPrefix" xml:space="preserve">
+    <value>Si è verificato un errore durante il caricamento del cruscotto: </value>
+  </data>
+  <data name="SuccessfullyJoinedCooperative" xml:space="preserve">
+    <value>Sei entrato con successo nella cooperativa!</value>
+  </data>
+  <data name="FailedToJoinCooperativePrefix" xml:space="preserve">
+    <value>Impossibile entrare nella cooperativa: </value>
+  </data>
+  <data name="TokenSpentRegisteredSuccessfully" xml:space="preserve">
+    <value>Spesa del token registrata con successo!</value>
+  </data>
+  <data name="FailedToSpendTokenPrefix" xml:space="preserve">
+    <value>Impossibile spendere il token: </value>
+  </data>
+  <data name="ErrorOccurredPrefix" xml:space="preserve">
+    <value>Si è verificato un errore: </value>
+  </data>
+  <data name="CooperativeDetails" xml:space="preserve">
+    <value>Dettagli Cooperativa</value>
+  </data>
+  <data name="BackToCooperatives" xml:space="preserve">
+    <value>Torna alle Cooperative</value>
+  </data>
+  <data name="RetrievingCooperativeDetails" xml:space="preserve">
+    <value>Recupero dei dettagli della cooperativa...</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Accesso Negato</value>
+  </data>
+  <data name="AccessDeniedDescription" xml:space="preserve">
+    <value>Non hai i permessi per accedere alla pagina di gestione di questa cooperativa. Solo gli amministratori e i manager della cooperativa sono autorizzati.</value>
+  </data>
+  <data name="CooperativeNotFound" xml:space="preserve">
+    <value>Cooperativa Non Trovata</value>
+  </data>
+  <data name="CooperativeNotFoundDescription" xml:space="preserve">
+    <value>La cooperativa richiesta non esiste o è stata rimossa.</value>
+  </data>
+  <data name="CooperativeCenterLocation" xml:space="preserve">
+    <value>Posizione Centrale della Cooperativa</value>
+  </data>
+  <data name="CooperativeCenterLocationDescription" xml:space="preserve">
+    <value>Imposta le coordinate centrali per questa cooperativa. Puoi usare la mappa per fare clic o trascinare il marker, oppure recuperare la tua posizione attuale dal browser.</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>Latitudine</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>Longitudine</value>
+  </data>
+  <data name="NotSetPlaceholder" xml:space="preserve">
+    <value>Non impostato</value>
+  </data>
+  <data name="Locate" xml:space="preserve">
+    <value>Localizza</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Salvataggio in corso...</value>
+  </data>
+  <data name="SaveLocation" xml:space="preserve">
+    <value>Salva Posizione</value>
+  </data>
+  <data name="CooperativeMembersAndManagers" xml:space="preserve">
+    <value>Membri e Manager della Cooperativa</value>
+  </data>
+  <data name="TotalCountFormat" xml:space="preserve">
+    <value>Totale: {0}</value>
+  </data>
+  <data name="NoMembersInCooperativeYet" xml:space="preserve">
+    <value>Non ci sono ancora membri in questa cooperativa.</value>
+  </data>
+  <data name="UserId" xml:space="preserve">
+    <value>ID Utente</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Nome utente</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="CoopRole" xml:space="preserve">
+    <value>Ruolo Coop</value>
+  </data>
+  <data name="Demote" xml:space="preserve">
+    <value>Retrocedi</value>
+  </data>
+  <data name="Promote" xml:space="preserve">
+    <value>Promuovi</value>
+  </data>
+  <data name="AddMembersUnaffiliated" xml:space="preserve">
+    <value>Aggiungi Membri (Utenti Non Affiliati)</value>
+  </data>
+  <data name="AllUsersAssignedToCoops" xml:space="preserve">
+    <value>Tutti gli utenti registrati sono già assegnati alle cooperative.</value>
+  </data>
+  <data name="AddtoCoop" xml:space="preserve">
+    <value>Aggiungi alla Coop</value>
+  </data>
+  <data name="InvalidCoopIdFormat" xml:space="preserve">
+    <value>Formato ID Cooperativa non valido.</value>
+  </data>
+  <data name="SuccessfullyAddedUserToCoopFormat" xml:space="preserve">
+    <value>Aggiunto con successo {0} a {1}.</value>
+  </data>
+  <data name="FailedToAddMemberPrefix" xml:space="preserve">
+    <value>Impossibile aggiungere il membro: </value>
+  </data>
+  <data name="SuccessfullyPromotedToManagerFormat" xml:space="preserve">
+    <value>Promosso con successo {0} a Manager.</value>
+  </data>
+  <data name="FailedToPromoteUserPrefix" xml:space="preserve">
+    <value>Impossibile promuovere l'utente: </value>
+  </data>
+  <data name="SuccessfullyDemotedToMemberFormat" xml:space="preserve">
+    <value>Retrocesso con successo {0} a Membro.</value>
+  </data>
+  <data name="FailedToDemoteUserPrefix" xml:space="preserve">
+    <value>Impossibile retrocedere l'utente: </value>
+  </data>
+  <data name="CooperativeLocationUpdated" xml:space="preserve">
+    <value>Posizione della cooperativa aggiornata con successo.</value>
+  </data>
+  <data name="FailedToSaveLocationPrefix" xml:space="preserve">
+    <value>Impossibile salvare la posizione: </value>
+  </data>
+  <data name="LedgerDetails" xml:space="preserve">
+    <value>Dettagli Registro</value>
+  </data>
+  <data name="RetrievingLedgerDetails" xml:space="preserve">
+    <value>Recupero dei dettagli del registro...</value>
+  </data>
+  <data name="AccessDeniedLedgerDescription" xml:space="preserve">
+    <value>Non hai il permesso di visualizzare questo registro. Devi essere un amministratore o un membro/manager di una delle cooperative partecipanti.</value>
+  </data>
+  <data name="LedgerNotFound" xml:space="preserve">
+    <value>Registro Non Trovato</value>
+  </data>
+  <data name="LedgerNotFoundDescription" xml:space="preserve">
+    <value>Il registro richiesto non esiste o è stato rimosso.</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Attivo</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Archiviato</value>
+  </data>
+  <data name="ArchiveLedger" xml:space="preserve">
+    <value>Archivia Registro</value>
+  </data>
+
+  <data name="ExchangeRateOppositeTerritory" xml:space="preserve">
+    <value>Tasso di cambio da applicare sul territorio opposto</value>
+  </data>
+  <data name="TotalSpentTokens" xml:space="preserve">
+    <value>Token Spesi Totali</value>
+  </data>
+  <data name="TokenBalancePerUser" xml:space="preserve">
+    <value>Saldo Token per Utente</value>
+  </data>
+  <data name="NoUserBalancesRecorded" xml:space="preserve">
+    <value>Nessun saldo utente registrato ancora.</value>
+  </data>
+  <data name="BalancesAppearDescription" xml:space="preserve">
+    <value>I saldi appariranno quando i tassisti registreranno l'uso dei token su questo registro.</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Utente</value>
+  </data>
+  <data name="TokensSpentAsCoop1Member" xml:space="preserve">
+    <value>Token Spesi come Membro Coop 1</value>
+  </data>
+  <data name="TokensSpentAsCoop2Member" xml:space="preserve">
+    <value>Token Spesi come Membro Coop 2</value>
+  </data>
+  <data name="TotalTokensSpent" xml:space="preserve">
+    <value>Token Spesi Totali</value>
+  </data>
+  <data name="NotAvailable" xml:space="preserve">
+    <value>N/D</value>
+  </data>
+  <data name="InvalidLedgerIdFormat" xml:space="preserve">
+    <value>Formato ID Registro non valido.</value>
+  </data>
+  <data name="FailedToLoadLedgerPrefix" xml:space="preserve">
+    <value>Impossibile caricare il registro: </value>
+  </data>
+  <data name="FailedToLoadParticipatingCooperatives" xml:space="preserve">
+    <value>Impossibile caricare le cooperative partecipanti.</value>
+  </data>
+  <data name="ErrorLoadingLedgerDetailsPrefix" xml:space="preserve">
+    <value>Si è verificato un errore durante il caricamento dei dettagli del registro: </value>
+  </data>
+  <data name="QuickSpend" xml:space="preserve">
+    <value>Spesa Rapida</value>
+  </data>
+  <data name="QuickSpendPortal" xml:space="preserve">
+    <value>Portale Spesa Rapida</value>
+  </data>
+  <data name="SimplifiedMobileLogging" xml:space="preserve">
+    <value>Registrazione semplificata dei token da mobile</value>
+  </data>
+  <data name="LocatingCoopAndActiveLedger" xml:space="preserve">
+    <value>Localizzazione della cooperativa e del registro attivo...</value>
+  </data>
+  <data name="NoCooperativeAffiliation" xml:space="preserve">
+    <value>Nessuna Affiliazione a Cooperative</value>
+  </data>
+  <data name="NoCooperativeAffiliationDescription" xml:space="preserve">
+    <value>Non appartieni ad alcuna cooperativa. Contatta il tuo amministratore o unisciti a una cooperativa nel cruscotto principale del tassista.</value>
+  </data>
+  <data name="GoToPortal" xml:space="preserve">
+    <value>Vai al Portale</value>
+  </data>
+  <data name="NoActiveLedgers" xml:space="preserve">
+    <value>Nessun Registro Attivo</value>
+  </data>
+  <data name="NoActiveLedgersConfiguredForCoopFormat" xml:space="preserve">
+    <value>Non ci sono ancora registri attivi configurati per la tua cooperativa ({0}).</value>
+  </data>
+  <data name="YourCooperative" xml:space="preserve">
+    <value>La tua Cooperativa</value>
+  </data>
+  <data name="OppositeCooperative" xml:space="preserve">
+    <value>Cooperativa Opposta</value>
+  </data>
+  <data name="LocationAcquired" xml:space="preserve">
+    <value>Posizione Acquisita</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Aggiorna</value>
+  </data>
+  <data name="GeolocationUnavailableDescription" xml:space="preserve">
+    <value>Geolocalizzazione non disponibile. Conferma forzata di default.</value>
+  </data>
+  <data name="GeolocationVerifiedZone" xml:space="preserve">
+    <value>Geolocalizzazione verificata: sei nella zona di carico</value>
+  </data>
+  <data name="GeolocationWarningZone" xml:space="preserve">
+    <value>Avviso Geolocalizzazione: fuori dalla zona di carico</value>
+  </data>
+  <data name="GeolocationOverrideWarning" xml:space="preserve">
+    <value>ATTENZIONE: Sembri più vicino al territorio della tua cooperativa che a quello della cooperativa opposta. Secondo le regole di geolocalizzazione, non dovresti registrare un token speso qui. Vuoi procedere comunque?</value>
+  </data>
+  <data name="ErrorOccurredSpendingTokenPrefix" xml:space="preserve">
+    <value>Si è verificato un errore durante la spesa del token: </value>
+  </data>
+</root>

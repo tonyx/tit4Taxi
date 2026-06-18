@@ -10,6 +10,7 @@ type LedgerEvent =
     | TokenSpentEvent of CoopId * UserId
     | Market1ValueSet of float
     | Market2ValueSet of float
+    | Archived 
 
     interface Event<Ledger> with
         member this.Process ledger = 
@@ -19,6 +20,8 @@ type LedgerEvent =
                 ledger.SetMarket1Value(newFlow) |> Ok
             | Market2ValueSet newFlow ->
                 ledger.SetMarket2Value(newFlow) |> Ok
+            | Archived -> 
+                ledger.Archive()
 
     static member Deserialize (x: string): Result<LedgerEvent, string> =
         try
