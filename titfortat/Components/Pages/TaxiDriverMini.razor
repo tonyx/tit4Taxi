@@ -9,6 +9,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using TitForTat.Shared
+@using System.Linq
+@using System.Text.Json
 @inject ICoopService CoopService
 @inject ILedgerService LedgerService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -162,11 +164,43 @@
     private System.Threading.CancellationTokenSource? pendingSpendCts;
     private int countdownSeconds = 0;
 
+    public class CoopTrackingRecord
+    {
+        public string CoopId { get; set; } = string.Empty;
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public bool TokenSpendWithoutExiting { get; set; }
+    }
+
+    private List<CoopTrackingRecord> trackingRecords = new();
+
     private async Task InitiateSpend()
     {
         if (pendingSpendCts != null) return;
 
-        if (!isCloserToOpposite)
+        // Perform the tokenSpendWithoutExiting double-spend check
+        if (userLat.HasValue && userLng.HasValue && trackingRecords.Any())
+        {
+            CoopTrackingRecord? closestRecord = null;
+            double minDistance = double.MaxValue;
+            foreach (var record in trackingRecords)
+            {
+                double dist = CalculateDistance(userLat.Value, userLng.Value, record.Latitude, record.Longitude);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    closestRecord = record;
+                }
+            }
+
+            if (closestRecord != null && closestRecord.TokenSpendWithoutExiting)
+            {
+                var warningText = "It looks like you are attempting to spend a token in a territory where you have already spent a token without exiting. Spending twice here could be due to an error. Are you sure you want to proceed?";
+                var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);
+                if (!confirmOverride) return;
+            }
+        }
+        else if (!isCloserToOpposite)
         {
             var warningText = Loc["GeolocationOverrideWarning"].Value;
             var confirmOverride = await JSRuntime.InvokeAsync<bool>("confirm", warningText);
@@ -212,6 +246,7 @@
     private string? successMessage;
     private UserContext? userContext;
     private UserId currentUserId = UserId.New();
+    private bool locationInitialized = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -220,8 +255,17 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && userCoop != null && targetLedger != null)
+        if (!locationInitialized && userCoop != null && targetLedger != null && userContext != null)
         {
+            locationInitialized = true;
+            
+            var coopsWithCoordsResult = await CoopService.GetCoopsThatHaveCoordinatesDefined(userContext, CancellationToken.None);
+            if (coopsWithCoordsResult.IsOk)
+            {
+                var coopsWithCoords = coopsWithCoordsResult.ResultValue.ToList();
+                await ReconcileTrackingRecords(coopsWithCoords);
+            }
+
             await RefreshLocation();
         }
     }
@@ -297,6 +341,88 @@
         }
     }
 
+    private async Task ReconcileTrackingRecords(List<Coop> coopsWithCoords)
+    {
+        try
+        {
+            var localDataJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "titfortat_coops_tracking");
+            List<CoopTrackingRecord>? localRecords = null;
+            if (!string.IsNullOrEmpty(localDataJson))
+            {
+                localRecords = JsonSerializer.Deserialize<List<CoopTrackingRecord>>(localDataJson);
+            }
+            
+            var reconciled = new List<CoopTrackingRecord>();
+            foreach (var coop in coopsWithCoords)
+            {
+                if (coop.CenterCoordinate != null && Microsoft.FSharp.Core.OptionModule.IsSome(coop.CenterCoordinate))
+                {
+                    var coord = coop.CenterCoordinate.Value;
+                    var localMatch = localRecords?.FirstOrDefault(r => r.CoopId == coop.CoopId.Value.ToString());
+                    reconciled.Add(new CoopTrackingRecord
+                    {
+                        CoopId = coop.CoopId.Value.ToString(),
+                        Latitude = coord.Latitude,
+                        Longitude = coord.Longitude,
+                        TokenSpendWithoutExiting = localMatch?.TokenSpendWithoutExiting ?? false
+                    });
+                }
+            }
+            trackingRecords = reconciled;
+            await SaveTrackingRecords();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reconciling tracking records: {ex.Message}");
+        }
+    }
+
+    private async Task SaveTrackingRecords()
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(trackingRecords);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "titfortat_coops_tracking", json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving tracking records: {ex.Message}");
+        }
+    }
+
+    private void EvaluateGeofence(double lat, double lng)
+    {
+        if (trackingRecords == null || !trackingRecords.Any()) return;
+
+        var activeSpends = trackingRecords.Where(r => r.TokenSpendWithoutExiting).ToList();
+        if (!activeSpends.Any()) return;
+
+        CoopTrackingRecord? closestRecord = null;
+        double minDistance = double.MaxValue;
+        foreach (var record in trackingRecords)
+        {
+            double dist = CalculateDistance(lat, lng, record.Latitude, record.Longitude);
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                closestRecord = record;
+            }
+        }
+
+        if (closestRecord != null)
+        {
+            var isCloserToDifferent = !activeSpends.Any(r => r.CoopId == closestRecord.CoopId);
+            if (isCloserToDifferent)
+            {
+                foreach (var record in trackingRecords)
+                {
+                    record.TokenSpendWithoutExiting = false;
+                }
+                _ = SaveTrackingRecords();
+            }
+        }
+    }
+
     private async Task RefreshLocation()
     {
         try
@@ -307,6 +433,7 @@
                 userLat = coords.Latitude;
                 userLng = coords.Longitude;
                 EvaluateDistances();
+                EvaluateGeofence(userLat.Value, userLng.Value);
             }
         }
         catch (Exception ex)
@@ -383,6 +510,28 @@
             if (result.IsOk)
             {
                 successMessage = Loc["TokenSpentRegisteredSuccessfully"];
+
+                // Set tokenSpendWithoutExiting to true for the closest cooperative
+                if (userLat.HasValue && userLng.HasValue && trackingRecords.Any())
+                {
+                    CoopTrackingRecord? closestRecord = null;
+                    double minDistance = double.MaxValue;
+                    foreach (var record in trackingRecords)
+                    {
+                        double dist = CalculateDistance(userLat.Value, userLng.Value, record.Latitude, record.Longitude);
+                        if (dist < minDistance)
+                        {
+                            minDistance = dist;
+                            closestRecord = record;
+                        }
+                    }
+                    if (closestRecord != null)
+                    {
+                        closestRecord.TokenSpendWithoutExiting = true;
+                        await SaveTrackingRecords();
+                    }
+                }
+
                 await LoadDashboard();
             }
             else
@@ -404,3 +553,4 @@
         public double Longitude { get; set; }
     }
 }
+

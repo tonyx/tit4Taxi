@@ -46,6 +46,17 @@ type CoopService
                             (ct |> Some)
                     return result |>> snd     
                 }
+        member this.GetCoopsThatHaveCoordinatesDefined (context: UserContext, ?ct: CancellationToken) =
+            let ct = defaultArg ct CancellationToken.None
+            taskResult
+                {
+                    let! result =
+                        StateView.getAllFilteredAggregateStatesAsync<Coop,CoopEvent,string>
+                            (fun (c: Coop) -> c.CenterCoordinate.IsSome)
+                            eventStore
+                            (ct |> Some)
+                    return result |>> snd     
+                }
         member this.PromoteMember (context: UserContext, coopId: CoopId, userId: UserId, ?ct: CancellationToken) = 
             let ct = defaultArg ct CancellationToken.None
             taskResult
@@ -192,6 +203,8 @@ type CoopService
                 this.CreateCoop (context, name, ?ct = ct)
             member this.GetAllCoops (context: UserContext, ?ct: CancellationToken) =
                 this.GetAllCoops (context, ?ct = ct)
+            member this.GetCoopsThatHaveCoordinatesDefined (context: UserContext, ?ct: CancellationToken) =
+                this.GetCoopsThatHaveCoordinatesDefined (context, ?ct = ct)
             member this.PromoteMember (context: UserContext, coopId: CoopId, userId: UserId, ?ct: CancellationToken) =
                 this.PromoteMember (context, coopId, userId, ?ct = ct)
             member this.DemoteMember (context: UserContext, coopId: CoopId, userId: UserId, ?ct: CancellationToken) =

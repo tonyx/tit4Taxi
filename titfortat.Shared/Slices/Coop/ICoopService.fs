@@ -9,6 +9,7 @@ open TitForTat.Domain.Coop
 type ICoopService = 
     abstract member CreateCoop: context: UserContext * name: string * ?ct: CancellationToken -> Task<Result<unit, string>>
     abstract member GetAllCoops: context: UserContext * ?ct: CancellationToken -> Task<Result<List<Coop>, string>>
+    abstract member GetCoopsThatHaveCoordinatesDefined: context: UserContext * ?ct: CancellationToken -> Task<Result<List<Coop>, string>>
     abstract member PromoteMember: context: UserContext * coopId: CoopId * userId: UserId * ?ct: CancellationToken -> Task<Result<unit, string>> 
     abstract member DemoteMember: context: UserContext * coopId: CoopId * userId: UserId * ?ct: CancellationToken -> Task<Result<unit, string>>
     abstract member AddMember: context: UserContext * coopId: CoopId * userId: UserId * ?ct: CancellationToken -> Task<Result<unit, string>>
