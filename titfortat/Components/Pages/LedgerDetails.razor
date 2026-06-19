@@ -1,0 +1,401 @@
+@page "/LedgerDetails/{LedgerIdString}"
+@attribute [Authorize]
+@using TitForTat.Services
+@using TitForTat.Shared.Services
+@using static TitForTat.Shared.Commons
+@using static TitForTat.Domain.Coop
+@using static TitForTat.Domain.Ledger
+@using static TitForTat.Domain.User
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using TitForTat.Shared
+@using System.Threading
+@using TitForTat.Domain
+@inject ILedgerService LedgerService
+@inject ICoopService CoopService
+@inject IUserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Ledger Spending Details</PageTitle>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12">
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">@Loc["Loading"]</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading spending details...</p>
+                </div>
+            }
+            else if (!isAuthorized)
+            {
+                <div class="card border-0 shadow-lg text-center p-5" style="border-radius: 16px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                    <div class="text-danger mb-3">
+                        <i class="bi bi-shield-lock-fill" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">@Loc["AccessDenied"]</h3>
+                    <p class="text-muted">@Loc["AccessDeniedLedgerDescription"]</p>
+                </div>
+            }
+            else if (ledger == null)
+            {
+                <div class="card border-0 shadow-lg text-center p-5" style="border-radius: 16px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+                    <div class="text-warning mb-3">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">@Loc["LedgerNotFound"]</h3>
+                    <p class="text-muted">@Loc["LedgerNotFoundDescription"]</p>
+                </div>
+            }
+            else
+            {
+                <!-- Header Card -->
+                <div class="card border-0 shadow-lg mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
+                    <div class="card-body p-4 text-white">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white bg-opacity-20 p-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-clock-history fs-3 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="mb-0 fw-bold">Spending Timebox Analysis</h3>
+                                    <p class="mb-0 text-white-50 small">Ledger: <span class="font-monospace text-white">@ledger.LedgerId.Value</span></p>
+                                </div>
+                            </div>
+                            <a class="btn btn-outline-light btn-sm shadow-sm px-4 py-2" href="/Ledger/@LedgerIdString" style="border-radius: 10px; font-weight: 600;">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Ledger
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="border-radius: 12px;">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        @errorMessage
+                        <button type="button" class="btn-close" @onclick="() => errorMessage = null" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Time Interval Selection -->
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-dark mb-3">Time Interval Settings</h5>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-secondary">From</label>
+                                <input type="datetime-local" class="form-control" @bind="dateFrom" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-secondary">To</label>
+                                <input type="datetime-local" class="form-control" @bind="dateTo" />
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary w-100 py-2 fw-semibold" @onclick="LoadSpendingEvents" style="border-radius: 8px;">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Update View
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="showEmptyBoxes" @bind="showEmptyBoxes" />
+                            <label class="form-check-label text-secondary small" for="showEmptyBoxes">
+                                Show empty 2-hour timeboxes
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Coop 1 Timeboxes -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; border-top: 6px solid #ffc107;">
+                            <div class="card-body p-4">
+                                <span class="badge bg-warning text-dark mb-2 px-3 py-1.5 rounded-pill">Cooperative 1</span>
+                                <h4 class="fw-bold text-dark mb-1">@(coop1?.Name ?? "Unknown Coop 1")</h4>
+                                <p class="text-secondary small mb-3">Exchange Rate: <strong>@ledger.ExchangeRateAppliedToCoop1().ToString("N4")</strong></p>
+                                <hr />
+
+                                @{
+                                    var coop1Boxes = GetTimeboxes(ledger.Coops.Item1, ledger.ExchangeRateAppliedToCoop1());
+                                }
+
+                                @if (!coop1Boxes.Any())
+                                {
+                                    <div class="text-center py-5 border border-dashed rounded-4 bg-light bg-opacity-50">
+                                        <i class="bi bi-clock fs-2 text-muted"></i>
+                                        <p class="mt-2 mb-0 text-secondary small fw-semibold">No tokens spent in this interval</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive rounded-3">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Timebox (2h)</th>
+                                                    <th class="text-center">Tokens Spent</th>
+                                                    <th class="text-end">Value (Rate Applied)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var box in coop1Boxes)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <div class="small fw-semibold">@box.Start.ToString("yyyy-MM-dd")</div>
+                                                            <div class="text-muted small">@box.Start.ToString("HH:mm") - @box.End.ToString("HH:mm")</div>
+                                                        </td>
+                                                        <td class="text-center fw-bold text-warning">@box.TokenCount</td>
+                                                        <td class="text-end fw-bold text-dark">@box.TotalValue.ToString("N4")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                            <tfoot class="table-dark">
+                                                <tr>
+                                                    <td class="fw-bold">Total</td>
+                                                    <td class="text-center fw-bold">@coop1Boxes.Sum(b => b.TokenCount)</td>
+                                                    <td class="text-end fw-bold">@coop1Boxes.Sum(b => b.TotalValue).ToString("N4")</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coop 2 Timeboxes -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; border-top: 6px solid #0dcaf0;">
+                            <div class="card-body p-4">
+                                <span class="badge bg-info text-dark mb-2 px-3 py-1.5 rounded-pill">Cooperative 2</span>
+                                <h4 class="fw-bold text-dark mb-1">@(coop2?.Name ?? "Unknown Coop 2")</h4>
+                                <p class="text-secondary small mb-3">Exchange Rate: <strong>@ledger.ExchangeRateAppliedToCoop2().ToString("N4")</strong></p>
+                                <hr />
+
+                                @{
+                                    var coop2Boxes = GetTimeboxes(ledger.Coops.Item2, ledger.ExchangeRateAppliedToCoop2());
+                                }
+
+                                @if (!coop2Boxes.Any())
+                                {
+                                    <div class="text-center py-5 border border-dashed rounded-4 bg-light bg-opacity-50">
+                                        <i class="bi bi-clock fs-2 text-muted"></i>
+                                        <p class="mt-2 mb-0 text-secondary small fw-semibold">No tokens spent in this interval</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive rounded-3">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Timebox (2h)</th>
+                                                    <th class="text-center">Tokens Spent</th>
+                                                    <th class="text-end">Value (Rate Applied)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var box in coop2Boxes)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <div class="small fw-semibold">@box.Start.ToString("yyyy-MM-dd")</div>
+                                                            <div class="text-muted small">@box.Start.ToString("HH:mm") - @box.End.ToString("HH:mm")</div>
+                                                        </td>
+                                                        <td class="text-center fw-bold text-info">@box.TokenCount</td>
+                                                        <td class="text-end fw-bold text-dark">@box.TotalValue.ToString("N4")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                            <tfoot class="table-dark">
+                                                <tr>
+                                                    <td class="fw-bold">Total</td>
+                                                    <td class="text-center fw-bold">@coop2Boxes.Sum(b => b.TokenCount)</td>
+                                                    <td class="text-end fw-bold">@coop2Boxes.Sum(b => b.TotalValue).ToString("N4")</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string LedgerIdString { get; set; } = string.Empty;
+
+    private bool isLoading = true;
+    private bool isAuthorized = false;
+    private TitForTat.Domain.Ledger.Ledger? ledger;
+    private TitForTat.Domain.Coop.Coop? coop1;
+    private TitForTat.Domain.Coop.Coop? coop2;
+    private string? errorMessage;
+    private UserContext? userContext;
+    private UserId currentUserId = UserId.New();
+
+    private DateTime dateFrom = DateTime.Today.AddDays(-7);
+    private DateTime dateTo = DateTime.Today.AddDays(1).AddSeconds(-1);
+    private bool showEmptyBoxes = false;
+
+    private List<(CoopId CoopId, UserId UserId, DateTime Timestamp)> spendingEvents = new();
+
+    public class TimeboxModel
+    {
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public int TokenCount { get; set; }
+        public double TotalValue { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLedgerAndEvents();
+    }
+
+    private async Task LoadLedgerAndEvents()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            userContext = ConverterUtils.fromClaimsPrincipal(authState.User);
+
+            if (userContext == null || userContext.IsAnonymous)
+            {
+                isAuthorized = false;
+                isLoading = false;
+                return;
+            }
+
+            if (userContext is UserContext.Authenticated authenticated)
+            {
+                currentUserId = authenticated.UserId;
+            }
+
+            if (!Guid.TryParse(LedgerIdString, out var ledgerGuid))
+            {
+                errorMessage = Loc["InvalidLedgerIdFormat"];
+                isLoading = false;
+                return;
+            }
+
+            var ledgerId = LedgerId.NewLedgerId(ledgerGuid);
+            var ledgerResult = await LedgerService.GetLedger(userContext, ledgerId, CancellationToken.None);
+
+            if (!ledgerResult.IsOk)
+            {
+                errorMessage = $"{Loc["FailedToLoadLedgerPrefix"]}{ledgerResult.ErrorValue}";
+                isLoading = false;
+                return;
+            }
+
+            ledger = ledgerResult.ResultValue;
+
+            // Fetch Coop 1 and Coop 2
+            var coop1Result = await CoopService.GetCoop(userContext, ledger.Coops.Item1, CancellationToken.None);
+            var coop2Result = await CoopService.GetCoop(userContext, ledger.Coops.Item2, CancellationToken.None);
+
+            if (coop1Result.IsOk && coop2Result.IsOk)
+            {
+                coop1 = coop1Result.ResultValue;
+                coop2 = coop2Result.ResultValue;
+            }
+            else
+            {
+                errorMessage = Loc["FailedToLoadParticipatingCooperatives"];
+            }
+
+            // Check authorization
+            var isAdmin = authState.User.IsInRole("ADMIN");
+            var isCoopMember = (coop1 != null && coop1.IsMember(currentUserId)) || 
+                               (coop2 != null && coop2.IsMember(currentUserId));
+
+            if (isAdmin || isCoopMember)
+            {
+                isAuthorized = true;
+                await LoadSpendingEvents();
+            }
+            else
+            {
+                isAuthorized = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading details: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadSpendingEvents()
+    {
+        if (ledger == null || userContext == null) return;
+        errorMessage = null;
+
+        try
+        {
+            var result = await LedgerService.GetSpendingTokenEventsInATimeInterval(
+                userContext, ledger.LedgerId, dateFrom, dateTo, CancellationToken.None);
+
+            if (result.IsOk)
+            {
+                spendingEvents = result.ResultValue.Select(e => (e.Item1, e.Item2, e.Item3)).ToList();
+            }
+            else
+            {
+                errorMessage = $"Failed to retrieve spending events: {result.ErrorValue}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error querying events: {ex.Message}";
+        }
+    }
+
+    private List<TimeboxModel> GetTimeboxes(CoopId targetCoopId, double exchangeRate)
+    {
+        var list = new List<TimeboxModel>();
+        
+        // Align start date to even hour
+        DateTime current = new DateTime(dateFrom.Year, dateFrom.Month, dateFrom.Day, dateFrom.Hour, 0, 0);
+        
+        var coopEvents = spendingEvents.Where(e => e.CoopId.Value == targetCoopId.Value).ToList();
+
+        while (current < dateTo)
+        {
+            DateTime boxEnd = current.AddHours(2);
+            var count = coopEvents.Count(e => e.Timestamp >= current && e.Timestamp < boxEnd);
+
+            if (showEmptyBoxes || count > 0)
+            {
+                list.Add(new TimeboxModel
+                {
+                    Start = current,
+                    End = boxEnd,
+                    TokenCount = count,
+                    TotalValue = count * exchangeRate
+                });
+            }
+
+            current = boxEnd;
+        }
+
+        return list;
+    }
+}

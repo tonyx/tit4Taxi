@@ -74,12 +74,17 @@
                                     <p class="mb-0 text-white-50 small">@Loc["LedgerId"]: <span class="font-monospace text-white">@ledger.LedgerId.Value</span></p>
                                 </div>
                              </div>
-                             @if (ledger.LedgerStatus.IsActive)
-                             {
-                                 <button class="btn btn-warning btn-sm shadow-sm px-4 py-2" @onclick="ArchiveLedger" style="border-radius: 10px; font-weight: 600;">
-                                     <i class="bi bi-archive-fill me-2"></i>@Loc["ArchiveLedger"]
-                                 </button>
-                             }
+                             <div class="d-flex gap-2">
+                                 <a class="btn btn-outline-light btn-sm shadow-sm px-4 py-2" href="/LedgerDetails/@LedgerIdString" style="border-radius: 10px; font-weight: 600;">
+                                     <i class="bi bi-clock-history me-2"></i>Spending Analysis
+                                 </a>
+                                 @if (ledger.LedgerStatus.IsActive)
+                                 {
+                                     <button class="btn btn-warning btn-sm shadow-sm px-4 py-2" @onclick="ArchiveLedger" style="border-radius: 10px; font-weight: 600;">
+                                         <i class="bi bi-archive-fill me-2"></i>@Loc["ArchiveLedger"]
+                                     </button>
+                                 }
+                             </div>
                          </div>
                     </div>
                 </div>

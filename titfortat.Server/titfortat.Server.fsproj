@@ -9,14 +9,8 @@
 
   <ItemGroup>
     <Compile Include="Library.fs" />
-    <Compile Include="Slices/User/Events.fs" />
-    <Compile Include="Slices/User/Commands.fs" />
     <Compile Include="Slices/User/UserService.fs" />
-    <Compile Include="Slices/Coop/Events.fs" />
-    <Compile Include="Slices/Coop/Commands.fs" />
     <Compile Include="Slices/Coop/CoopService.fs" />
-    <Compile Include="Slices/Ledger/Events.fs" />
-    <Compile Include="Slices/Ledger/Commands.fs" />
     <Compile Include="Slices/Ledger/LedgerService.fs" />
     <Compile Include="Slices/MailQueueNotification/MailQueue.fs" />
     <Compile Include="Slices/MailQueueNotification/MailQueueEvents.fs" />

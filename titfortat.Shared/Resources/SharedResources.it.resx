@@ -689,4 +689,25 @@
   <data name="Undo" xml:space="preserve">
     <value>Annulla</value>
   </data>
+  <data name="AuthRequired" xml:space="preserve">
+    <value>Autenticazione Richiesta</value>
+  </data>
+  <data name="RegistrationPINs" xml:space="preserve">
+    <value>PIN di Registrazione</value>
+  </data>
+  <data name="TaxiDriver" xml:space="preserve">
+    <value>Tassista</value>
+  </data>
+  <data name="TaxiDriverMini" xml:space="preserve">
+    <value>Tassista (Mini)</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Disconnetti</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Registrati</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Accedi</value>
+  </data>
 </root>

@@ -78,6 +78,29 @@ type LedgerService (eventStore: IEventStore<string>) =
             return result
         }
 
+    member this.GetSpendingTokenEventsInATimeInterval (context: UserContext, ledgerId: LedgerId, dateFrom: DateTime, dateTo: DateTime, ?ct: CancellationToken) =
+        let ct = defaultArg ct CancellationToken.None
+        taskResult {
+            let! serEvents =
+                eventStore.GetAggregateEventsInATimeIntervalAsync
+                    (Ledger.Version, Ledger.StorageName, ledgerId.Value, dateFrom, dateTo, ct)
+                    |> TaskResult.map (fun (l) -> l |> List.map snd)
+
+            let! events =
+                serEvents
+                |> List.traverseResultM (fun e -> LedgerEvent.Deserialize e)
+
+            let filteredEvents =
+                events
+                |> List.filter (fun event -> event.IsTokenSpent)
+
+            return filteredEvents
+                |> List.map (fun event -> 
+                    match event with
+                    | LedgerEvent.TokenSpent(coopId, userId, dateTime) -> (coopId, userId, dateTime)
+                    | _ -> failwith "Should not happen")
+        }
+
     member this.SetMarket1Value (context: UserContext, ledgerId: LedgerId, flow1: float, ?ct: CancellationToken) =
         let ct = defaultArg ct CancellationToken.None
         taskResult {
@@ -131,6 +154,8 @@ type LedgerService (eventStore: IEventStore<string>) =
             this.GetLedger (context, ledgerId, ?ct = ct)
         member this.GetActiveLedgers (context, ?ct) =
             this.GetActiveLedgers (context, ?ct = ct)
+        member this.GetSpendingTokenEventsInATimeInterval (context, ledgerId, dateFrom, dateTo, ?ct) =
+            this.GetSpendingTokenEventsInATimeInterval (context, ledgerId, dateFrom, dateTo, ?ct = ct)
         member this.SetMarket1Value (context, ledgerId, flow1, ?ct) =
             this.SetMarket1Value (context, ledgerId, flow1, ?ct = ct)
         member this.SetMarket2Value (context, ledgerId, flow2, ?ct) =
