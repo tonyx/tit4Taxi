@@ -33,6 +33,10 @@ Trust in a self-governing commons is maintained through active verification. TIT
 
 ---
 
+[A youtube link that explains the problem (in Italian, only audio)](https://youtu.be/lOG7-_cjANA?si=Lcsoi7MAJYHG3Ut7) (Note: A.I. generated)
+
+---
+
 ## 📄 License
 
 This project is licensed under the **Business Source License 1.1** (BSL-1.1). 
@@ -41,4 +45,5 @@ This project is licensed under the **Business Source License 1.1** (BSL-1.1).
 * **On/After June 21, 2030:** Automatically transitions to the **GNU General Public License v3.0 or later (GPL-3.0+)**.
 
 For more details, see the [LICENSE](file:///Users/antoniolucca/github/titfortat/LICENSE) file.
+
 
