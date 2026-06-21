@@ -30,3 +30,15 @@ Trust in a self-governing commons is maintained through active verification. TIT
 - Verifies real-time event logs and check-ins at transit hubs.
 - Audits ledger balances to prevent double-spending or unauthorized transactions.
 - Applies graduated adjustments or flags violations when deviation from the rules is detected.
+
+---
+
+## 📄 License
+
+This project is licensed under the **Business Source License 1.1** (BSL-1.1). 
+
+* **Before June 21, 2030:** Licensed for non-production, evaluation, testing, and development use only. Commercial production use requires a separate license.
+* **On/After June 21, 2030:** Automatically transitions to the **GNU General Public License v3.0 or later (GPL-3.0+)**.
+
+For more details, see the [LICENSE](file:///Users/antoniolucca/github/titfortat/LICENSE) file.
+
