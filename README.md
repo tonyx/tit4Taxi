@@ -9,13 +9,11 @@
 ### 1. The Common Pool Resource (CPR) Problem
 In metropolitan transportation, high-demand transit hubs—such as airport pickup terminals, train stations, and designated taxi stands—act as **Common Pool Resources (CPRs)**. These hubs are highly subtractable (one driver picking up a passenger leaves fewer passengers for others) yet difficult to exclude drivers from. Without a structured coordination mechanism, these hubs suffer from the *Tragedy of the Commons*: chronic congestion, long idle times, predatory competition, and a degraded experience for both commuters and drivers.
 
-### 2. Market Asymmetry & The Token System
-To establish a functional token-based cooperative framework, the system must recognize and counteract the inherent **market asymmetries** between opposing transport groups. These asymmetries typically stem from:
-- **Fleet Scale:** Disparities in total active vehicles and passenger reach.
-- **Regulatory Frameworks:** Differing rights to bus lanes, taxi stands, or street-hail privileges.
-- **Operational Dynamics:** Variations in dispatch technology and pricing structures (e.g., surge pricing vs. flat metered rates).
-
-A naive, symmetric token exchange would eventually lead to one group dominating the common resource while the other runs out of tokens. TIT4TAXI uses a balanced token ledger that calibrates exchange rates and access rights to ensure that mutual cooperation remains stable, economically viable, and fair for all participating parties.
+### 2. Market Asymmetry, Territorial Licensing & Reciprocity
+To establish a functional cooperative framework, the system must recognize and counteract the inherent **market asymmetries** and **territorial licenses** governing the transport cooperatives:
+- **Territorial Boundaries & Travel:** While vehicles are permitted to travel freely between different territories (e.g., driving a passenger from Territory A to Territory B), a Cooperative is entitled to load/pick up passengers only in its home territory.
+- **Reciprocal Loading Rights:** To prevent inefficient empty return trips, the system mediates the rights for drivers of one Cooperative to load passengers in the opposite territory.
+- **Token-Weighted Markets:** Since different territories (markets) have unequal sizes, demands, and values, a naive 1:1 exchange is unsustainable. TIT4TAXI regulates reciprocity using a ledger with a token weighted by the established economic values of the respective markets. This ensures a balanced, fair, and proportional exchange of cross-border passenger-loading rights.
 
 ### 3. Elinor Ostrom's Governing the Commons
 The theoretical foundation of TIT4TAXI is inspired by **Elinor Ostrom's** seminal work on *Governing the Commons*. Ostrom demonstrated that common-pool resources can be sustainably managed by the users themselves without relying solely on state regulation or privatization. TIT4TAXI operationalizes Ostrom's design principles by:
