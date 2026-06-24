@@ -32,6 +32,7 @@ Trust in a self-governing commons is maintained through active verification. TIT
 ---
 
 [A youtube link that explains the problem (in Italian, only audio)](https://youtu.be/lOG7-_cjANA?si=Lcsoi7MAJYHG3Ut7) (Note: A.I. generated)
+[A paper/preprint](https://zenodo.org/records/20824501)
 
 ---
 
