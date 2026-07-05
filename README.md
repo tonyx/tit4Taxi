@@ -35,7 +35,7 @@ Trust in a self-governing commons is maintained through active verification. TIT
 
 Paper/Preprint (with some A.I. assistance) [Beyond the Tragedy of the Alleged Monopoly: A Commons-Based Cooperation Model with Weighted Reciprocity in the Taxi Sector ](https://zenodo.org/records/21175549)
 
----
+[A youtube link that explains the paper](https://youtu.be/rC3WaIJcx5c?si=AaIfFzSJ28G32kmb) (Tools: NotebookLM)
 
 ## 📄 License
 
